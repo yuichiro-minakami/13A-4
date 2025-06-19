@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>新規登録</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>新規登録</h2>
+  <form id="registerForm">
+    <label>ユーザー名: <input required name="username"></label><br>
+    <label>パスワード: <input type="password" required name="password"></label><br>
+    <label>電話番号: <input name="phone"></label><br>
+    <label>住所: <input name="address"></label><br>
+    <button type="submit">登録</button>
+  </form>
+  <p id="registerError" class="error"></p>
+  <button onclick="location.href='login.html'">戻る</button>
+  <script>
+    document.getElementById("registerForm").onsubmit = async function(e){
+      e.preventDefault();
+      document.getElementById("registerError").innerText = "";
+      const d = new FormData(this);
+      const obj = Object.fromEntries(d.entries());
+      const res = await fetch("https://vtshgosg7h.execute-api.ap-southeast-2.amazonaws.com/default/hackRegister", {
+        method: "POST",
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(obj)
+      });
+      const data = await res.json();
+      if(data.result === "ok") {
+        location.href = "register_complete.html";
+      } else {
+        document.getElementById("registerError").innerText = data.message || "登録に失敗しました";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>購入完了</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>購入が完了しました！</h2>
+    <div>
+        <span>お支払い金額：</span>
+        <span id="price"></span>円
+    </div>
+    <button onclick="location.href='product_list.html'">商品一覧に戻る</button>
+    <script>
+        const params = new URLSearchParams(location.search);
+        const price = params.get('price');
+        document.getElementById('price').textContent = Number(price).toLocaleString();
+    </script>
+</body>
+</html>

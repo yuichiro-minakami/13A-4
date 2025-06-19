@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>商品メニュー</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { position:relative;}
+    .menu-dots { position:absolute; top:10px; right:10px; font-size:32px; cursor:pointer;}
+    .dropdown-menu { display:none; position:absolute; top:40px; right:10px; background:#fff; box-shadow:0 0 5px #888; border-radius:5px;}
+    .dropdown-menu.show { display:block;}
+    .dropdown-menu a { display:block; padding:8px;}
+  </style>
+</head>
+<body>
+  <div class="menu-dots" onclick="toggleMenu()">&#x22EE;</div>
+  <div id="dropdown" class="dropdown-menu">
+    <a href="menu.html">メニュー</a>
+    <a href="login.html">ログアウト</a>
+  </div>
+  <h2>商品一覧</h2>
+  <ul id="itemList"></ul>
+  <script>
+  function toggleMenu(){
+    document.getElementById('dropdown').classList.toggle('show');
+  }
+  // 商品一覧読み込み
+  fetch("https://hjml6ot20g.execute-api.ap-southeast-2.amazonaws.com/default/hackView")
+    .then(r=>r.json())
+    .then(data=>{
+      const ul = document.getElementById('itemList');
+      data.items.forEach(item=>{
+        const li=document.createElement('li');
+        li.innerText=item;
+        ul.appendChild(li);
+      })
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>商品詳細</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>商品詳細</h2>
+    <div id="content"></div>
+    <script>
+    const API_detail = "https://y0s2z4arjf.execute-api.ap-southeast-2.amazonaws.com/hackdetail";
+    const API_purchase = "https://uatl9juey9.execute-api.ap-southeast-2.amazonaws.com/default/hackPurchase";
+    const params = new URLSearchParams(location.search);
+    const itemid = params.get('itemid');
+    fetch(`${API_detail}?itemid=${itemid}`)
+      .then(res => res.json())
+      .then(product => {
+        console.log(product);
+        const content = document.getElementById('content');
+        content.innerHTML = `
+          <img src="${product.image_url}" class="detail-img" alt="${product.itemname}">
+          <h2>${product.itemname}</h2>
+          <div class="price">¥${product.price.toLocaleString()}</div>
+          <div class="detail">${product.detail}</div>
+          <button id="buyBtn" ${product.buystatus==1?'disabled style="background:#888;"':''}>
+            ${product.buystatus==1 ? '売り切れ' : '購入'}
+          </button>
+        `;
+        if(product.buystatus==0){
+            document.getElementById('buyBtn').addEventListener('click', () => {
+                fetch(API_purchase, {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({itemid})
+                })
+                .then(res => res.json()).then(res => {
+                    location.href = 'purchase.html?price=' + product.price;
+                });
+            });
+        }
+      });
+    </script>
+</body>
+</html>
