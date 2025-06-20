@@ -15,6 +15,7 @@
   <p id="loginError" class="error"></p>
   <button onclick="location.href='register.html'">新規登録</button>
   <button onclick="alert('パスワードリセットは未実装')">パスワードリセット</button>
+
   <script>
     document.getElementById("loginForm").onsubmit = async function(e){
       e.preventDefault();
@@ -28,11 +29,19 @@
       });
       let data = await res.json();
       if(data.result === "ok") {
+        // ★useridをローカルストレージへ保存
+        if(data.userid){
+          localStorage.setItem("userid", data.userid);
+        } else {
+          document.getElementById("loginError").innerText = "内部エラー: ユーザーIDが取得できませんでした";
+          return;
+        }
         location.href = "product_list.html";
       } else {
         document.getElementById("loginError").innerText = data.message || "ログインに失敗しました";
       }
     }
   </script>
+
 </body>
 </html>

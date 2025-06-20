@@ -11,6 +11,14 @@
     <script>
     const API_detail = "https://y0s2z4arjf.execute-api.ap-southeast-2.amazonaws.com/hackdetail";
     const API_purchase = "https://uatl9juey9.execute-api.ap-southeast-2.amazonaws.com/default/hackPurchase";
+    
+    // ログイン確認
+    const userid = localStorage.getItem("userid");
+    if (!userid) {
+      alert("ログインユーザー情報がありません。再ログインしてください。");
+      location.href = "login.html";
+    }
+    
     const params = new URLSearchParams(location.search);
     const itemid = params.get('itemid');
     fetch(`${API_detail}?itemid=${itemid}`)

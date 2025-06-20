@@ -27,7 +27,7 @@
   <div id="dropdown" class="dropdown-menu">
     <a href="product_list.html">商品一覧</a>
     <a href="add_product.html">商品を出品</a>
-    <a href="login.html">ログアウト</a>
+    <a href="login.html" onclick="localStorage.removeItem('userid')">ログアウト</a>
   </div>
 <div class="container">
     <h1>商品一覧</h1>
@@ -42,9 +42,18 @@
 
 <script>
 const API_URL = 'https://s4ptlhdjid.execute-api.ap-southeast-2.amazonaws.com/hackSearch'; // ←あなたのLambda APIのURLに必ず変更
+
+// ログイン確認
+const userid = localStorage.getItem("userid");
+if (!userid) {
+    alert("ログインユーザー情報がありません。再ログインしてください。");
+    location.href = "login.html";
+}
+
 function toggleMenu(){
   document.getElementById('dropdown').classList.toggle('show');
 }
+
 function createProductHtml(item) {
     const imgUrl = item.image_url; // 画像はS3の静的ホスティングURLパスに合わせる
     const sold = item.buystatus == 1;

@@ -13,6 +13,13 @@
     </div>
     <button onclick="location.href='product_list.html'">商品一覧に戻る</button>
     <script>
+        // ログイン確認
+        const userid = localStorage.getItem("userid");
+        if (!userid) {
+        alert("ログインユーザー情報がありません。再ログインしてください。");
+        location.href = "login.html";
+        }
+        
         const params = new URLSearchParams(location.search);
         const price = params.get('price');
         document.getElementById('price').textContent = Number(price).toLocaleString();
