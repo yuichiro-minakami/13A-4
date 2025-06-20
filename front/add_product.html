@@ -4,15 +4,14 @@
   <meta charset="utf-8">
   <title>商品出品</title>
   <link rel="stylesheet" href="style.css">
-  <!-- <script src="https://unpkg.com/html5-qrcode"></script> バーコード読取用ライブラリ例 -->
   <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
   <style>
-    /* シンプル追加CSS */
     #barcode-reader { width: 300px; }
   </style>
 </head>
 <body>
   <h2>商品を出品</h2>
+
   <form id="productForm">
     <label>商品画像: <input type="file" id="image" accept="image/*" required></label><br>
     <label>商品名: <input name="itemname" required></label><br>
@@ -20,7 +19,7 @@
     <label>商品説明:<br>
       <textarea name="detail" rows="4" cols="35"></textarea>
     </label><br>
-    <!-- バーコード入力欄 -->
+
     <label>バーコード写真:
       <input type="file" id="barcodeImage" accept="image/*" required>
     </label>
@@ -30,16 +29,15 @@
     <br>
     <button type="submit">出品</button>
   </form>
+
   <p id="msg"></p>
   <button onclick="location.href='product_list.html'">商品一覧へ戻る</button>
-  
+
+  <img id="previewImg" style="display:none;">
+
   <script>
-    // S3とAPI Gatewayのエンドポイント
     const S3_BUCKET_URL = "https://nes-hack-sample-1304hashigaya.s3.ap-southeast-2.amazonaws.com";
     const api = "https://dsgxgozuji.execute-api.ap-southeast-2.amazonaws.com/default/hackListing";
-
-    // ↓ここでログイン済みuseridをlocalStorage等に保存した想定とします
-    // localStorage.setItem("userid", "ログイン時にセット");
     const userid = localStorage.getItem("userid");
 
     if (!userid) {
@@ -47,7 +45,7 @@
       location.href = "login.html";
     }
 
-    document.getElementById("readBarcodeBtn").onclick = async function(){
+    document.getElementById("readBarcodeBtn").onclick = function(){
       document.getElementById("itemcode_view").innerText = "";
       document.getElementById("itemcode").value = "";
 
@@ -57,21 +55,12 @@
         return;
       }
 
-      // File→DataURLへ
       const reader = new FileReader();
       reader.onload = function(e) {
-        const image = new Image();
-        image.onload = function() {
-          // 画像をcanvasに描画
-          const canvas = document.createElement('canvas');
-          canvas.width = image.width;
-          canvas.height = image.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(image, 0, 0, image.width, image.height);
-
-          // ZXingで画像(canvas)を読取り
+        const img = document.getElementById("previewImg");
+        img.onload = function() {
           const codeReader = new ZXing.BrowserBarcodeReader();
-          codeReader.decodeFromCanvas(canvas)
+          codeReader.decodeFromImage(img)
             .then(result => {
               document.getElementById("itemcode_view").innerText = "バーコード値: " + result.text;
               document.getElementById("itemcode").value = result.text;
@@ -79,58 +68,12 @@
             .catch(err => {
               document.getElementById("itemcode_view").innerText = "バーコードを検出できませんでした";
             });
-        }
-        image.src = e.target.result;
-      }
+        };
+        img.src = e.target.result;
+      };
       reader.readAsDataURL(file);
-    }
+    };
 
-    // // バーコード画像ファイル入力時に呼ぶ
-    // document.getElementById("readBarcodeBtn").onclick = async function(){
-    //   const file = document.getElementById("barcodeImage").files[0];
-    //   if(!file){
-    //     document.getElementById("msg").innerText="バーコード画像を選択してください";
-    //     return;
-    //   }
-
-    //   // 画像→canvas→BarcodeDetectorで解析
-    //   if ('BarcodeDetector' in window) {
-    //     const reader = new FileReader();
-    //     reader.onload = function(event) {
-    //       let img = new Image();
-    //       img.onload = function() {
-    //         let canvas = document.createElement('canvas');
-    //         canvas.width = img.width;
-    //         canvas.height = img.height;
-    //         let ctx = canvas.getContext('2d');
-    //         ctx.drawImage(img, 0, 0);
-
-    //         canvas.toBlob(async (blob) => {
-    //           try {
-    //             const bitmap = await createImageBitmap(blob);
-    //             const detector = new BarcodeDetector();
-    //             const barcodes = await detector.detect(bitmap);
-    //             if(barcodes.length > 0){
-    //               const code = barcodes[0].rawValue;
-    //               document.getElementById("itemcode_view").innerText = "バーコード値: " + code;
-    //               document.getElementById("itemcode").value = code;
-    //             } else {
-    //               document.getElementById("msg").innerText="バーコードを検出できませんでした";
-    //             }
-    //           } catch(e){
-    //             document.getElementById("msg").innerText="バーコード読取エラー: "+e;
-    //           }
-    //         });
-    //       };
-    //       img.src = event.target.result;
-    //     };
-    //     reader.readAsDataURL(file);
-    //   } else {
-    //     document.getElementById("msg").innerText="このブラウザはバーコード検出API未対応です（Chrome・Edgeでご利用ください）";
-    //   }
-    // };
-
-    // フォーム送信
     document.getElementById("productForm").onsubmit = async function(e){
       e.preventDefault();
       document.getElementById("msg").innerText = "";
@@ -140,23 +83,24 @@
         return;
       }
 
-      // バーコード
       const itemcode = document.getElementById("itemcode").value;
       if(!itemcode){
         document.getElementById("msg").innerText="バーコードの読取を完了してください";
         return;
       }
 
-      // 1. S3へ画像アップロード（プリサインなし公共バケット前提）
       const fileName = "product_image_" + Date.now() + "_" + Math.floor(Math.random()*10000) + "." + file.name.split('.').pop();
       const uploadUrl = S3_BUCKET_URL + "/image/" + fileName;
-      let uploadRes = await fetch(uploadUrl, {method:"PUT",body:file,headers:{"Content-Type":file.type}});
+      let uploadRes = await fetch(uploadUrl, {
+        method:"PUT",
+        body:file,
+        headers:{"Content-Type":file.type}
+      });
       if(uploadRes.status !== 200 && uploadRes.status !== 201){
         document.getElementById("msg").innerText="画像のアップロードに失敗しました";
         return;
       }
 
-      // 2. LambdaへDB登録
       const form = e.target;
       let body = {
         itemname: form.itemname.value,
@@ -185,3 +129,4 @@
   </script>
 </body>
 </html>
+
