@@ -57,10 +57,10 @@
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        const img = document.getElementById("previewImg");
-        img.onload = function() {
+        const image = new Image();
+        image.onload = function() {
           const codeReader = new ZXing.BrowserBarcodeReader();
-          codeReader.decodeFromImage(img)
+          codeReader.decodeFromImage(image)
             .then(result => {
               document.getElementById("itemcode_view").innerText = "バーコード値: " + result.text;
               document.getElementById("itemcode").value = result.text;
@@ -69,7 +69,7 @@
               document.getElementById("itemcode_view").innerText = "バーコードを検出できませんでした";
             });
         };
-        img.src = e.target.result;
+        image.src = e.target.result;
       };
       reader.readAsDataURL(file);
     };
