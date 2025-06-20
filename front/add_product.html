@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <title>商品出品</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/html5-qrcode"></script> <!-- バーコード読取用ライブラリ例 -->
+  <!-- <script src="https://unpkg.com/html5-qrcode"></script> バーコード読取用ライブラリ例 -->
+  <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
   <style>
     /* シンプル追加CSS */
     #barcode-reader { width: 300px; }
@@ -46,50 +47,88 @@
       location.href = "login.html";
     }
 
-    // バーコード画像ファイル入力時に呼ぶ
     document.getElementById("readBarcodeBtn").onclick = async function(){
+      document.getElementById("itemcode_view").innerText = "";
+      document.getElementById("itemcode").value = "";
+
       const file = document.getElementById("barcodeImage").files[0];
       if(!file){
-        document.getElementById("msg").innerText="バーコード画像を選択してください";
+        alert("バーコード画像を選択してください");
         return;
       }
 
-      // 画像→canvas→BarcodeDetectorで解析
-      if ('BarcodeDetector' in window) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          let img = new Image();
-          img.onload = function() {
-            let canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            let ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
+      // File→DataURLへ
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const image = new Image();
+        image.onload = function() {
+          // 画像をcanvasに描画
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(image, 0, 0, image.width, image.height);
 
-            canvas.toBlob(async (blob) => {
-              try {
-                const bitmap = await createImageBitmap(blob);
-                const detector = new BarcodeDetector();
-                const barcodes = await detector.detect(bitmap);
-                if(barcodes.length > 0){
-                  const code = barcodes[0].rawValue;
-                  document.getElementById("itemcode_view").innerText = "バーコード値: " + code;
-                  document.getElementById("itemcode").value = code;
-                } else {
-                  document.getElementById("msg").innerText="バーコードを検出できませんでした";
-                }
-              } catch(e){
-                document.getElementById("msg").innerText="バーコード読取エラー: "+e;
-              }
+          // ZXingで画像(canvas)を読取り
+          const codeReader = new ZXing.BrowserBarcodeReader();
+          codeReader.decodeFromCanvas(canvas)
+            .then(result => {
+              document.getElementById("itemcode_view").innerText = "バーコード値: " + result.text;
+              document.getElementById("itemcode").value = result.text;
+            })
+            .catch(err => {
+              document.getElementById("itemcode_view").innerText = "バーコードを検出できませんでした";
             });
-          };
-          img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      } else {
-        document.getElementById("msg").innerText="このブラウザはバーコード検出API未対応です（Chrome・Edgeでご利用ください）";
+        }
+        image.src = e.target.result;
       }
-    };
+      reader.readAsDataURL(file);
+    }
+
+    // // バーコード画像ファイル入力時に呼ぶ
+    // document.getElementById("readBarcodeBtn").onclick = async function(){
+    //   const file = document.getElementById("barcodeImage").files[0];
+    //   if(!file){
+    //     document.getElementById("msg").innerText="バーコード画像を選択してください";
+    //     return;
+    //   }
+
+    //   // 画像→canvas→BarcodeDetectorで解析
+    //   if ('BarcodeDetector' in window) {
+    //     const reader = new FileReader();
+    //     reader.onload = function(event) {
+    //       let img = new Image();
+    //       img.onload = function() {
+    //         let canvas = document.createElement('canvas');
+    //         canvas.width = img.width;
+    //         canvas.height = img.height;
+    //         let ctx = canvas.getContext('2d');
+    //         ctx.drawImage(img, 0, 0);
+
+    //         canvas.toBlob(async (blob) => {
+    //           try {
+    //             const bitmap = await createImageBitmap(blob);
+    //             const detector = new BarcodeDetector();
+    //             const barcodes = await detector.detect(bitmap);
+    //             if(barcodes.length > 0){
+    //               const code = barcodes[0].rawValue;
+    //               document.getElementById("itemcode_view").innerText = "バーコード値: " + code;
+    //               document.getElementById("itemcode").value = code;
+    //             } else {
+    //               document.getElementById("msg").innerText="バーコードを検出できませんでした";
+    //             }
+    //           } catch(e){
+    //             document.getElementById("msg").innerText="バーコード読取エラー: "+e;
+    //           }
+    //         });
+    //       };
+    //       img.src = event.target.result;
+    //     };
+    //     reader.readAsDataURL(file);
+    //   } else {
+    //     document.getElementById("msg").innerText="このブラウザはバーコード検出API未対応です（Chrome・Edgeでご利用ください）";
+    //   }
+    // };
 
     // フォーム送信
     document.getElementById("productForm").onsubmit = async function(e){
