@@ -1,62 +1,240 @@
+/* 基本設定 */
+:root {
+    --primary-font: 'Nunito', 'M PLUS Rounded 1c', 'Yu Gothic', Meiryo, sans-serif;
+    --secondary-bg: #fff6fa;
+    --product-bg: #faf8f2;
+    --item-bg: #fff;
+    --border-color: #e0e0e0;
+    --template-border-color: #f7b7d8;
+    --text-color: #555;
+    --primary-link: #007aff;
+    --hover-link: #ea8cbd;
+    --box-shadow-default: 0 6px 18px #ffe3ee;
+    --shadow-light: 0 1px 4px #e3e3e3;
+}
+
 body {
-    font-family: 'Yu Gothic',Meiryo,sans-serif;
-    background: #faf8f2;
-    margin: 0; padding: 40px;
+    font-family: var(--primary-font);
+    background: var(--secondary-bg);
+    margin: 0;
+    padding: 40px;
 }
+
+/* コンテナ */
+.container {
+    width: 900px;
+    margin: 32px auto;
+    padding: 20px;
+    background: var(--product-bg);
+    border-radius: 18px;
+    box-shadow: var(--box-shadow-default);
+}
+
+/* ヘッダー */
 h1, h2 {
-    text-align:center;
+    text-align: center;
+    color: #e06ca0;
+    font-family: var(--primary-font);
+    letter-spacing: 2px;
+    margin-bottom: 28px;
 }
-.product-list {
+
+/* ログイン */
+.login-container {
+    max-width: 600px; /* 必要に応じてサイズを調整 */
+    margin: 0 auto; /* 水平方向の中央揃え */
+    padding: 20px;
+    text-align: center; /* 中央揃えになった要素内のテキストを左揃えに戻す */
+    display: block; /* ブロック要素として中央揃え */
+    /*background-color: var(--product-bg); /* 背景色を付ける場合 */
+    border-radius: 10px; /* 枠線角を丸くする場合 */
+}
+
+/*出品*/
+.add-container {
+    max-width: 600px; /* 必要に応じてサイズを調整 */
+    margin: 0 auto; /* 水平方向の中央揃え */
+    padding: 20px;
+    text-align: center; /* 中央揃えになった要素内のテキストを左揃えに戻す */
+    display: block; /* ブロック要素として中央揃え */
+    /*background-color: var(--product-bg); /* 背景色を付ける場合 */
+    border-radius: 10px; /* 枠線角を丸くする場合 */
+}
+
+/* フォーム要素の配置 */
+#loginForm {
+    display: inline-block;
+}
+
+#loginError {
+    margin-top: 10px;
+    text-align: left; /* エラーメッセージを左揃え */
+}
+
+/* 検索バー */
+.search-bar {
     display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    justify-content: center;
+    gap: 8px;
+    margin-bottom: 32px;
 }
-.product {
-    width: 240px;
-    padding:20px 10px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 1px 1px 6px #ccc;
+
+.search-bar input[type="text"] {
+    border-radius: 16px;
+    border: 1.5px solid var(--template-border-color);
+    padding: 8px 14px;
+    font-size: 1.1em;
+    background: var(--item-bg);
+    transition: border 0.2s;
+}
+
+.search-bar input[type="text"]:focus {
+    outline: none;
+    border: 2px solid #eda3c6;
+}
+
+.search-bar button {
+    background: #f8acd5;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.08em;
+    padding: 7px 22px;
+    box-shadow: 0 2px 8px #ffdbe8;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.search-bar button:hover {
+    background: var(--hover-link);
+}
+
+/* 商品グリッドとアイテム */
+.products {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    justify-items: center;
+}
+
+.item {
+    background: var(--item-bg);
+    border: none;
+    border-radius: 22px;
+    padding: 24px 14px;
+    text-align: center;
+    min-height: 340px;
+    box-shadow: 0 6px 18px #ffd6e0;
+    width: 250px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: transform 0.11s;
+    position: relative;
 }
-.product img {
-    width: 180px; height: 180px; object-fit: cover; border-radius: 8px;
-    margin-bottom: 8px;
+
+.item:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 10px 28px #fab6ca;
 }
-.product.soldout {
-    opacity: 0.4;
-    pointer-events: none;
+
+.item img {
+    width: 170px;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 18px;
+    background: var(--secondary-bg);
+    margin-bottom: 10px;
+    border: 3px solid #ffe2ef;
+    box-shadow: 0 2px 8px #fdd1de;
 }
-.product .itemname a {
-    color: #006fb9; text-decoration: none;
-    font-weight: bold;
-}
-.product .status span.sold {
-    color: #a00; font-weight: bold;
-}
-.price {
-    font-size:1.3em; color: #333; margin-top: 4px;
-}
-.detail-img {
-    display:block;
-    width:320px; height:320px;
-    object-fit:cover;
-    margin: 0 auto 24px;
-    border-radius: 10px;
-}
-button {
-    padding: 12px 32px; border: none;
-    background: #4287f5; color: #fff;
-    font-size: 1.1em; border-radius: 6px;
-    margin-top: 18px;
+
+/* アイテムテキスト */
+.itemname {
+    display: block;
+    font-size: 1.25rem; /* 元の1.25remを優先 */
+    margin: 14px 0 6px;
+    color: var(--primary-link);
+    text-decoration: underline;
     cursor: pointer;
 }
-button[disabled] {
-    background:#888; cursor: not-allowed;
+
+.itemname.sold {
+    color: #999;
+    text-decoration: none;
+    cursor: default;
 }
-.detail {
-    margin: 24px 0; font-size: 1.1em;
+
+.price {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin-bottom: 6px;
+}
+
+/* その他コンポーネント */
+.soldout {
+    color: #fff;
+    background: #ee5555;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.reset-btn {
+    margin-left: 8px;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 10px;
+    background: #fff;
+    box-shadow: 0 0 5px #888;
+    border-radius: 5px;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 8px;
+}
+
+.menu-dots {
+    position: absolute;
+    top: 48px;         /* もっと中央にしたい場合は数値を増減 */
+    right: 50%;        /* 画面中央から */
+    transform: translateX(630px); /* 調整用（container幅によるので好みで増減） */
+    width: 36px;
+    height: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+}
+.menu-dots {
+    position: absolute;
+    top: 40px;
+    right: 50%;
+    transform: translateX(550px);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+}
+.menu-dots .bar {
+    width: 28px;
+    height: 4px;
+    background: #e06ca0;
+    margin: 3px 0;
+    border-radius: 2px;
+    transition: 0.21s;
 }

@@ -10,28 +10,35 @@
     #itemname[readonly] { background: #eef; }
     #limit_price_view { color: #a66; font-weight: bold; }
   </style>
-  <link rel="icon" href="icon.png" type="image/x-icon">
+  <link rel="icon" href="icon.png" type="image/png">
 </head>
 <body>
   <h2>商品を出品</h2>
-
-  <form id="productForm">
-    <label>商品画像: <input type="file" id="image" accept="image/*" required></label><br>
-    <label>商品名: <span id="itemname" name="itemname" required>バーコードを読み取ってください</span></label><br>
-    <label>値段: <input id="price" name="price" type="number" required></label>
-    <span id="limit_price_view"></span><br>
-    <label>商品説明:<br>
-      <textarea name="detail" rows="4" cols="35"></textarea>
-    </label><br>
-    <label>バーコード写真:
-      <input type="file" id="barcodeImage" accept="image/*" required>
-    </label>
-    <button type="button" id="readBarcodeBtn">バーコード読取</button>
-    <span id="itemcode_view"></span>
-    <input type="hidden" id="itemcode" name="itemcode">
-    <br>
-    <button type="submit">出品</button>
-  </form>
+  <div class="login-container"> <!-- 中央揃え用のコンテナを追加 -->
+    <form id="productForm">
+      <label>商品画像: <input type="file" id="image" accept="image/*" required></label><br>
+      <!-- 商品画像プレビュー -->
+       <br><img id="previewProductImg" style="display:none;max-width:200px;max-height:200px;">
+       <br>
+ 
+       <label>商品名: <span id="itemname" name="itemname" required>バーコードを読み取ってください</span></label><br>
+       <label>値段: <input id="price" name="price" type="number" required></label>
+       <span id="limit_price_view"></span><br>
+       <label>商品説明:<br>
+        <textarea name="detail" rows="4" cols="35"></textarea>
+      </label><br>
+      <label>バーコード写真:
+        <input type="file" id="barcodeImage" accept="image/*" required>
+      </label>
+      <!-- バーコード画像プレビュー -->
+       <br><img id="previewBarcodeImg" style="display:none;max-width:200px;max-height:200px;">
+       <button type="button" id="readBarcodeBtn">バーコード読取</button>
+       <span id="itemcode_view"></span>
+       <input type="hidden" id="itemcode" name="itemcode">
+       <br>
+       <button type="submit">出品</button>
+      </form>
+  </div>
 
   <p id="msg"></p>
   <button onclick="location.href='product_list.html'">商品一覧へ戻る</button>
@@ -51,11 +58,12 @@
       location.href = "login.html";
     }
 
+
     // バーコード読取
     document.getElementById("readBarcodeBtn").onclick = function(){
       document.getElementById("itemcode_view").innerText = "";
       document.getElementById("itemcode").value = "";
-      document.getElementById("itemname").value = "";
+      document.getElementById("itemname").innerText = "";
       document.getElementById("itemname").readOnly = false;
       document.getElementById("limit_price_view").innerText = "";
       officialPrice = null;
@@ -68,8 +76,12 @@
       }
       const reader = new FileReader();
       reader.onload = function(e) {
-        const image = new Image();
-        image.onload = function() {
+        const image = document.getElementById("previewBarcodeImg");
+
+        // リトライ関数
+        let tryCount = 0;
+        const maxTries = 3;
+        function tryDecode(){
           const codeReader = new ZXing.BrowserBarcodeReader();
           codeReader.decodeFromImage(image)
             .then(async result => {
@@ -98,17 +110,27 @@
               }
             })
             .catch(err => {
-              document.getElementById("itemcode_view").innerText = "バーコードを検出できませんでした";
-              document.getElementById("itemname").readOnly = false;
-              document.getElementById("limit_price_view").innerText = "";
-              officialPrice = null;
-              maxPrice = null;
+              tryCount++;
+              if(tryCount < maxTries){
+                setTimeout(tryDecode, 100); // 100msごとに再試行
+              }else{
+                document.getElementById("itemcode_view").innerText = "バーコードを検出できませんでした（" + maxTries + "回試行）";
+                document.getElementById("itemname").readOnly = false;
+                document.getElementById("limit_price_view").innerText = "";
+                officialPrice = null;
+                maxPrice = null;
+              }
             });
+        }
+
+        image.onload = function() {
+          tryDecode();
         };
         image.src = e.target.result;
       };
       reader.readAsDataURL(file);
     };
+
 
     // 値段チェック
     document.getElementById("price").addEventListener("input", function(){
@@ -121,6 +143,41 @@
         }
       }
     });
+
+    // 商品画像選択時プレビュー
+    document.getElementById("image").addEventListener("change", function(){
+      const file = this.files[0];
+      const preview = document.getElementById("previewProductImg");
+      if(file){
+        const reader = new FileReader();
+        reader.onload = function(e){
+          preview.src = e.target.result;
+          preview.style.display = "inline";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = "none";
+        preview.src = "";
+      }
+    });
+
+    // バーコード画像選択時プレビュー
+    document.getElementById("barcodeImage").addEventListener("change", function(){
+      const file = this.files[0];
+      const preview = document.getElementById("previewBarcodeImg");
+      if(file){
+        const reader = new FileReader();
+        reader.onload = function(e){
+          preview.src = e.target.result;
+          preview.style.display = "inline";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = "none";
+        preview.src = "";
+      }
+    });
+
 
     // 出品フォーム送信
     document.getElementById("productForm").onsubmit = async function(e){
@@ -161,7 +218,7 @@
 
       const form = e.target;
       let body = {
-        itemname: document.getElementById("itemname").value,
+        itemname: document.getElementById("itemname").innerText,
         detail: form.detail.value,
         price: price,
         image_url: uploadUrl,

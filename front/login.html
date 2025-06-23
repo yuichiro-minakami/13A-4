@@ -4,18 +4,20 @@
   <meta charset="utf-8">
   <title>ログイン</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="icon.png" type="image/x-icon">
+  <link rel="icon" href="icon.png" type="image/png">
 </head>
 <body>
   <h2>ログイン</h2>
-  <form id="loginForm">
-    <label>ユーザー名: <input required name="username"></label><br>
-    <label>パスワード: <input type="password" required name="password"></label><br>
-    <button type="submit">ログイン</button>
-  </form>
-  <p id="loginError" class="error"></p>
-  <button onclick="location.href='register.html'">新規登録</button>
-  <button onclick="alert('パスワードリセットは未実装')">パスワードリセット</button>
+  <div class="login-container"> <!-- 中央揃え用のコンテナを追加 -->
+    <form id="loginForm">
+      <label>ユーザー名: <input required name="username"></label><br>
+      <label>パスワード: <input type="password" required name="password"></label><br>
+      <button type="submit">ログイン</button>
+    </form>
+    <p id="loginError" class="error"></p>
+    <button onclick="location.href='register.html'">新規登録</button>
+    <button onclick="alert('パスワードリセットは未実装')">パスワードリセット</button>
+  </div>
 
   <script>
     document.getElementById("loginForm").onsubmit = async function(e){
@@ -30,7 +32,6 @@
       });
       let data = await res.json();
       if(data.result === "ok") {
-        // ★useridをローカルストレージへ保存
         if(data.userid){
           localStorage.setItem("userid", data.userid);
         } else {
@@ -43,6 +44,5 @@
       }
     }
   </script>
-
 </body>
 </html>

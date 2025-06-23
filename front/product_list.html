@@ -3,35 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <title>商品一覧</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        body { font-family: 'Yu Gothic',Meiryo,sans-serif; background: #faf8f2; margin: 0; padding: 40px;}
-        .container { width: 900px; margin: 32px auto; padding: 20px; background:#faf8f2; border-radius:8px;}
-        .search-bar { display: flex; gap: 8px; margin-bottom: 32px;}
-        .products { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;}
-        .item { background: #fff; border: 1px solid #e0e0e0; border-radius:8px; padding: 12px; text-align: center; min-height: 340px; box-shadow:0 1px 4px #e3e3e3;}
-        .item img { width: 220px; height: 220px; object-fit: cover; border-radius:5px; background:#fafafa;}
-        .itemname { display: block; font-size: 1.25rem; margin: 14px 0 6px; color: #007aff; text-decoration: underline; cursor:pointer;}
-        .itemname.sold { color: #999; text-decoration: none; cursor: default;}
-        .price { font-size: 1.1rem; color:#555; margin-bottom:6px;}
-        .soldout { color: #fff; background: #ee5555; padding: 5px 8px; border-radius: 4px; font-size: 0.95rem; }
-        .reset-btn { margin-left: 8px; }
-        .dropdown-menu {display: none;position: absolute;top: 40px;right: 10px;background: #fff;box-shadow: 0 0 5px #888;border-radius: 5px;}
-        .dropdown-menu.show { display:block; }
-        .dropdown-menu a { display:block; padding:8px;}
-        .menu-dots { position:absolute; top:10px; right:10px; font-size:32px; cursor:pointer;}
+    .filter-btn.selected {
+      background: #4369d3;
+      color: #fff;
+    }
+    .filter-btn {
+      margin-right: 6px;
+      background: #eee;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      padding: 4px 18px;
+      cursor: pointer;
+    }
+    .soldout {
+      color: #c00;
+      font-weight: bold;
+    }
     </style>
-    <link rel="icon" href="icon.png" type="image/x-icon">
+    <link rel="icon" href="icon.png" type="image/png">
 </head>
-
 <body>
-<div class="menu-dots" onclick="toggleMenu()">&#x22EE;</div>
-  <div id="dropdown" class="dropdown-menu">
+<!-- 画面のなるべく中央寄りの上に配置したい場合 -->
+<div class="menu-dots" onclick="toggleMenu()">
+  <span class="bar"></span>
+  <span class="bar"></span>
+  <span class="bar"></span>
+</div>
+<div id="dropdown" class="dropdown-menu">
     <a href="product_list.html">商品一覧</a>
     <a href="add_product.html">商品を出品</a>
     <a href="login.html" onclick="localStorage.removeItem('userid')">ログアウト</a>
-  </div>
+</div>
 <div class="container">
     <h1>商品一覧</h1>
+    <!-- フィルターボタンを検索の上に追加 -->
+    <div class="filter-bar" style="margin: 10px 0;">
+        <button class="filter-btn" data-bs="">すべて</button>
+        <button class="filter-btn" data-bs="0">販売中</button>
+        <button class="filter-btn" data-bs="1">購入済み</button>
+    </div>
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="商品名で検索" value="" style="flex:1; font-size:1.1em; padding:4px 8px;">
         <button id="searchBtn">検索</button>
@@ -42,7 +54,7 @@
 </div>
 
 <script>
-const API_URL = 'https://s4ptlhdjid.execute-api.ap-southeast-2.amazonaws.com/hackSearch'; // ←あなたのLambda APIのURLに必ず変更
+const API_URL = 'https://6047k12ptl.execute-api.ap-southeast-2.amazonaws.com/default/hackFilter';
 
 // ログイン確認
 const userid = localStorage.getItem("userid");
@@ -56,11 +68,10 @@ function toggleMenu(){
 }
 
 function createProductHtml(item) {
-    const imgUrl = item.image_url; // 画像はS3の静的ホスティングURLパスに合わせる
+    const imgUrl = item.image_url;
     const sold = item.buystatus == 1;
     const itemnameClass = sold ? "itemname sold" : "itemname";
-    // 商品詳細はitemidをクエリやパスで
-    const detailUrl = `/product_detail.html?itemid=${item.itemid}`; // 別ページを想定
+    const detailUrl = `/product_detail.html?itemid=${item.itemid}`;
     return `
         <div class="item">
             <img src="${imgUrl}" alt="${item.itemname}">
@@ -72,18 +83,20 @@ function createProductHtml(item) {
                 }
             </div>
             <div class="price">￥${item.price.toLocaleString()}</div>
-            ${
-              sold
-                ? `<div class="soldout">SOLD</div>`
-                : ""
-            }
+            ${sold ? `<div class="soldout">SOLD</div>` : ""}
         </div>
     `;
 }
 
-function fetchProducts(keyword='') {
+// フィルター状態グローバル変数
+let nowBuyStatus = ""; // "", "0", "1"
+
+function fetchProducts(keyword='', buystatus='') {
     let url = API_URL;
-    if (keyword) url += '?q=' + encodeURIComponent(keyword);
+    let params = [];
+    if (keyword) params.push('q=' + encodeURIComponent(keyword));
+    if (buystatus !== "" && buystatus !== undefined) params.push('buystatus=' + buystatus);
+    if (params.length > 0) url += '?' + params.join('&');
     fetch(url)
     .then(resp => resp.json())
     .then(data => {
@@ -94,6 +107,9 @@ function fetchProducts(keyword='') {
             return;
         }
         document.getElementById('noResult').style.display = 'none';
+
+        data.sort((a, b) => a.buystatus - b.buystatus);
+
         productsEl.innerHTML = data.map(createProductHtml).join('');
     })
     .catch(err => {
@@ -102,17 +118,29 @@ function fetchProducts(keyword='') {
 }
 
 window.onload = function() {
+    // フィルター(購入/未購入)ボタン制御
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            nowBuyStatus = this.getAttribute('data-bs');
+            const kw = document.getElementById('searchInput').value.trim();
+            fetchProducts(kw, nowBuyStatus);
+        });
+    });
+    // 初期は「両方」ボタンをactive
+    document.querySelector('.filter-btn[data-bs=""]').classList.add('selected');
+
     fetchProducts();
 
     document.getElementById('searchBtn').onclick = function() {
         const kw = document.getElementById('searchInput').value.trim();
-        fetchProducts(kw);
+        fetchProducts(kw, nowBuyStatus);
     }
     document.getElementById('resetBtn').onclick = function() {
         document.getElementById('searchInput').value = '';
-        fetchProducts('');
+        fetchProducts('', nowBuyStatus);
     }
-    // Enterキーでも検索
     document.getElementById('searchInput').onkeypress = function(e) {
         if (e.key === 'Enter') document.getElementById('searchBtn').click();
     }
