@@ -7,6 +7,8 @@
   <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
   <style>
     #barcode-reader { width: 300px; }
+    #itemname[readonly] { background: #eef; }
+    #limit_price_view { color: #a66; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -14,12 +16,12 @@
 
   <form id="productForm">
     <label>商品画像: <input type="file" id="image" accept="image/*" required></label><br>
-    <label>商品名: <input name="itemname" required></label><br>
-    <label>値段: <input name="price" type="number" required></label><br>
+    <label>商品名: <input id="itemname" name="itemname" required></label><br>
+    <label>値段: <input id="price" name="price" type="number" required></label>
+    <span id="limit_price_view"></span><br>
     <label>商品説明:<br>
       <textarea name="detail" rows="4" cols="35"></textarea>
     </label><br>
-
     <label>バーコード写真:
       <input type="file" id="barcodeImage" accept="image/*" required>
     </label>
@@ -38,35 +40,68 @@
   <script>
     const S3_BUCKET_URL = "https://nes-hack-sample-1304hashigaya.s3.ap-southeast-2.amazonaws.com";
     const api = "https://dsgxgozuji.execute-api.ap-southeast-2.amazonaws.com/default/hackListing";
+    const officialApi = api + "?itemcode="; // Lambda関数でGETリクエスト項目を実装
     const userid = localStorage.getItem("userid");
+    let officialPrice = null; // 公式価格
+    let maxPrice = null;      // 公式価格の2倍上限
 
     if (!userid) {
       alert("ログインユーザー情報がありません。再ログインしてください。");
       location.href = "login.html";
     }
 
+    // バーコード読取
     document.getElementById("readBarcodeBtn").onclick = function(){
       document.getElementById("itemcode_view").innerText = "";
       document.getElementById("itemcode").value = "";
+      document.getElementById("itemname").value = "";
+      document.getElementById("itemname").readOnly = false;
+      document.getElementById("limit_price_view").innerText = "";
+      officialPrice = null;
+      maxPrice = null;
 
       const file = document.getElementById("barcodeImage").files[0];
       if(!file){
         alert("バーコード画像を選択してください");
         return;
       }
-
       const reader = new FileReader();
       reader.onload = function(e) {
         const image = new Image();
         image.onload = function() {
           const codeReader = new ZXing.BrowserBarcodeReader();
           codeReader.decodeFromImage(image)
-            .then(result => {
-              document.getElementById("itemcode_view").innerText = "バーコード値: " + result.text;
-              document.getElementById("itemcode").value = result.text;
+            .then(async result => {
+              const itemcode = result.text;
+              document.getElementById("itemcode_view").innerText = "バーコード値: " + itemcode;
+              document.getElementById("itemcode").value = itemcode;
+
+              // 公式商品APIへitemcode照会 (LambdaへのGETリクエスト)
+              let res = await fetch(api + "?itemcode=" + encodeURIComponent(itemcode));
+              if(res.ok){
+                let data = await res.json();
+                if(data && data.result === "ok" && data.itemname){
+                  document.getElementById("itemname").value = data.itemname;
+                  document.getElementById("itemname").readOnly = true;
+                  officialPrice = data.price;
+                  maxPrice = officialPrice * 2;
+                  document.getElementById("limit_price_view").innerText = `（公式価格: ${officialPrice} 円、出品上限: ${maxPrice} 円まで）`;
+                  document.getElementById("msg").innerText = "";
+                }else{
+                  document.getElementById("msg").innerText = "公式商品データベースに該当商品がありません。";
+                  document.getElementById("itemname").readOnly = false;
+                  document.getElementById("limit_price_view").innerText = "";
+                  officialPrice = null;
+                  maxPrice = null;
+                }
+              }
             })
             .catch(err => {
               document.getElementById("itemcode_view").innerText = "バーコードを検出できませんでした";
+              document.getElementById("itemname").readOnly = false;
+              document.getElementById("limit_price_view").innerText = "";
+              officialPrice = null;
+              maxPrice = null;
             });
         };
         image.src = e.target.result;
@@ -74,18 +109,40 @@
       reader.readAsDataURL(file);
     };
 
+    // 値段チェック
+    document.getElementById("price").addEventListener("input", function(){
+      if(maxPrice){
+        const v = parseInt(this.value);
+        if(v > maxPrice){
+          document.getElementById("msg").innerText = `価格は公式価格(${officialPrice}円)の2倍(${maxPrice}円)までにしてください`;
+        }else{
+          document.getElementById("msg").innerText = "";
+        }
+      }
+    });
+
+    // 出品フォーム送信
     document.getElementById("productForm").onsubmit = async function(e){
       e.preventDefault();
       document.getElementById("msg").innerText = "";
+
       const file = document.getElementById("image").files[0];
       if(!file){
         document.getElementById("msg").innerText="画像を選択してください";
         return;
       }
-
       const itemcode = document.getElementById("itemcode").value;
       if(!itemcode){
         document.getElementById("msg").innerText="バーコードの読取を完了してください";
+        return;
+      }
+      const price = parseInt(document.getElementById("price").value);
+      if(maxPrice && price > maxPrice){
+        document.getElementById("msg").innerText = `価格は公式価格(${officialPrice}円)の2倍(${maxPrice}円)までにしてください`;
+        return;
+      }
+      if(price <= 0){
+        document.getElementById("msg").innerText = "価格を1円以上で入力してください";
         return;
       }
 
@@ -103,9 +160,9 @@
 
       const form = e.target;
       let body = {
-        itemname: form.itemname.value,
+        itemname: document.getElementById("itemname").value,
         detail: form.detail.value,
-        price: parseInt(form.price.value),
+        price: price,
         image_url: uploadUrl,
         userid: parseInt(userid),
         itemcode: itemcode
@@ -122,6 +179,9 @@
       else if(data.result==="duplicate"){
         document.getElementById("msg").innerText="このバーコードの商品は既に出品済みです（同じバーコードの商品を複数回は出品できません）";
       }
+      else if(data.result==="price_ng"){
+        document.getElementById("msg").innerText="価格が公式価格の2倍を超えています。";
+      }
       else{
         document.getElementById("msg").innerText="商品登録に失敗しました: "+ (data.message || '');
       }
@@ -129,4 +189,3 @@
   </script>
 </body>
 </html>
-

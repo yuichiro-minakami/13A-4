@@ -3,7 +3,9 @@ body {
     background: #faf8f2;
     margin: 0; padding: 40px;
 }
-h1, h2 { text-align:center; }
+h1, h2 {
+    text-align:center;
+}
 .product-list {
     display: flex;
     flex-wrap: wrap;
@@ -35,7 +37,9 @@ h1, h2 { text-align:center; }
 .product .status span.sold {
     color: #a00; font-weight: bold;
 }
-.price { font-size:1.3em; color: #333; margin-top: 4px;}
+.price {
+    font-size:1.3em; color: #333; margin-top: 4px;
+}
 .detail-img {
     display:block;
     width:320px; height:320px;
@@ -53,4 +57,6 @@ button {
 button[disabled] {
     background:#888; cursor: not-allowed;
 }
-.detail { margin: 24px 0; font-size: 1.1em;}
+.detail {
+    margin: 24px 0; font-size: 1.1em;
+}
