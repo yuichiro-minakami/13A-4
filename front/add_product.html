@@ -10,13 +10,14 @@
     #itemname[readonly] { background: #eef; }
     #limit_price_view { color: #a66; font-weight: bold; }
   </style>
+  <link rel="icon" href="icon.png" type="image/x-icon">
 </head>
 <body>
   <h2>商品を出品</h2>
 
   <form id="productForm">
     <label>商品画像: <input type="file" id="image" accept="image/*" required></label><br>
-    <label>商品名: <input id="itemname" name="itemname" required></label><br>
+    <label>商品名: <span id="itemname" name="itemname" required>バーコードを読み取ってください</span></label><br>
     <label>値段: <input id="price" name="price" type="number" required></label>
     <span id="limit_price_view"></span><br>
     <label>商品説明:<br>
@@ -81,7 +82,7 @@
               if(res.ok){
                 let data = await res.json();
                 if(data && data.result === "ok" && data.itemname){
-                  document.getElementById("itemname").value = data.itemname;
+                  document.getElementById("itemname").innerText = data.itemname;
                   document.getElementById("itemname").readOnly = true;
                   officialPrice = data.price;
                   maxPrice = officialPrice * 2;
