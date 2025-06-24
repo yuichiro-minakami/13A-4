@@ -32,7 +32,7 @@
   <span class="bar"></span>
 </div>
 <div id="dropdown" class="dropdown-menu">
-    <a href="product_list.html">商品一覧</a>
+    <!-- <a href="product_list.html">商品一覧</a> -->
     <a href="add_product.html">商品を出品</a>
     <a href="login.html" onclick="localStorage.removeItem('userid')">ログアウト</a>
 </div>
@@ -64,23 +64,44 @@ if (!userid) {
 }
 
 function toggleMenu(){
-  document.getElementById('dropdown').classList.toggle('show');
+    const menu = document.getElementById('dropdown');
+    const btn = document.querySelector('.menu-dots');
+    // メニューを出す座標を取得
+    const rect = btn.getBoundingClientRect();
+
+    if (!menu.classList.contains('show')) {
+        // メニュー位置調整 (rect.right, rect.bottom)
+        menu.style.left = rect.right - 150 + "px"; // メニュー幅にあわせてleftを調整
+        menu.style.top  = rect.bottom + 6 + "px";
+        menu.classList.add('show');
+        //他クリックで閉じる
+        document.addEventListener('mousedown', closeMenuWhenOutside);
+    } else {
+        menu.classList.remove('show');
+        document.removeEventListener('mousedown', closeMenuWhenOutside);
+    }
+}
+
+function closeMenuWhenOutside(ev){
+    const menu = document.getElementById('dropdown');
+    if (!menu.contains(ev.target) && !document.querySelector('.menu-dots').contains(ev.target)) {
+        menu.classList.remove('show');
+        document.removeEventListener('mousedown', closeMenuWhenOutside);
+    }
 }
 
 function createProductHtml(item) {
     const imgUrl = item.image_url;
     const sold = item.buystatus == 1;
     const itemnameClass = sold ? "itemname sold" : "itemname";
-    const detailUrl = `/product_detail.html?itemid=${item.itemid}`;
+    
     return `
-        <div class="item">
+        <div class="item"
+            data-itemid="${item.itemid}" 
+            data-sold="${sold}">
             <img src="${imgUrl}" alt="${item.itemname}">
             <div>
-                ${
-                  sold
-                    ? `<span class="${itemnameClass}">${item.itemname}</span>`
-                    : `<a href="${detailUrl}" class="${itemnameClass}">${item.itemname}</a>`
-                }
+                <span class="${itemnameClass}">${item.itemname}</span>
             </div>
             <div class="price">￥${item.price.toLocaleString()}</div>
             ${sold ? `<div class="soldout">SOLD</div>` : ""}
@@ -111,6 +132,18 @@ function fetchProducts(keyword='', buystatus='') {
         data.sort((a, b) => a.buystatus - b.buystatus);
 
         productsEl.innerHTML = data.map(createProductHtml).join('');
+
+        document.querySelectorAll('.item').forEach(itemDiv => {
+            if(itemDiv.dataset.sold !== "true"){
+                itemDiv.style.cursor = "pointer";
+                itemDiv.addEventListener('click', function(){
+                    const itemid = this.dataset.itemid;
+                    window.location.href = `/product_detail.html?itemid=${itemid}`;
+                });
+            }else{
+                itemDiv.style.cursor = "default";
+            }
+        });
     })
     .catch(err => {
         alert("エラー：" + err);

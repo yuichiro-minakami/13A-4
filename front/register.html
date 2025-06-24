@@ -1,4 +1,4 @@
- <!doctype html>
+<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
@@ -7,16 +7,28 @@
   <link rel="icon" href="icon.png" type="image/png">
 </head>
 <body>
-  <h2>新規登録</h2>
-  <form id="registerForm">
-    <label>ユーザー名: <input required name="username"></label><br>
-    <label>パスワード: <input type="password" required name="password"></label><br>
-    <label>電話番号: <input name="phone"></label><br>
-    <label>住所: <input name="address"></label><br>
-    <button type="submit">登録</button>
-  </form>
-  <p id="registerError" class="error"></p>
-  <button onclick="location.href='login.html'">戻る</button>
+  <div class="register-wrapper">
+    <div class="register-card">
+      <h2 class="register-title">新規登録</h2>
+      <form id="registerForm" class="register-form">
+        <label class="register-label">ユーザー名
+          <input required name="username" class="register-input">
+        </label>
+        <label class="register-label">パスワード
+          <input type="password" required name="password" class="register-input">
+        </label>
+        <label class="register-label">電話番号
+          <input name="phone" class="register-input">
+        </label>
+        <label class="register-label">住所
+          <input name="address" class="register-input">
+        </label>
+        <button type="submit" class="register-btn">登録</button>
+      </form>
+      <p id="registerError" class="register-error"></p>
+      <button class="register-back-btn" onclick="location.href='login.html'">戻る</button>
+    </div>
+  </div>
   <script>
     document.getElementById("registerForm").onsubmit = async function(e){
       e.preventDefault();
