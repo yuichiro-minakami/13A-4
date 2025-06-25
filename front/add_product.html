@@ -9,241 +9,361 @@
     #barcode-reader { width: 300px; }
     #itemname[readonly] { background: #eef; }
     #limit_price_view { color: #a66; font-weight: bold; }
+    .hide { display: none; }
+    body {padding-top: 68px; /* headerの高さと揃える */}
   </style>
   <link rel="icon" href="icon.png" type="image/png">
 </head>
 <body>
+<!-- ▼ ヘッダー -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="product_list.html" class="cute-logo">
+      <img src="logo.png" alt="転売イヤーのロゴ">
+    </a>
+  </div>
+</header>
+
   <h2>商品を出品</h2>
-  <div class="login-container"> <!-- 中央揃え用のコンテナを追加 -->
+  <div class="add-product-container">
     <form id="productForm">
       <label>商品画像: <input type="file" id="image" accept="image/*" required></label><br>
-      <!-- 商品画像プレビュー -->
        <br><img id="previewProductImg" style="display:none;max-width:200px;max-height:200px;">
        <br>
- 
-       <label>商品名: <span id="itemname" name="itemname" required>バーコードを読み取ってください</span></label><br>
-       <label>値段: <input id="price" name="price" type="number" required></label>
+
+       <label>商品名:
+         <input id="itemname" name="itemname" type="text" required placeholder="商品名を入力 or バーコード読取で自動取得" style="background:#fff;" autocomplete="off">
+       </label><br>
+       <label>値段:
+         <input id="price" name="price" type="number" required>
+       </label>
        <span id="limit_price_view"></span><br>
        <label>商品説明:<br>
         <textarea name="detail" rows="4" cols="35"></textarea>
       </label><br>
-      <label>バーコード写真:
-        <input type="file" id="barcodeImage" accept="image/*" required>
-      </label>
-      <!-- バーコード画像プレビュー -->
-       <br><img id="previewBarcodeImg" style="display:none;max-width:200px;max-height:200px;">
-       <button type="button" id="readBarcodeBtn">バーコード読取</button>
-       <span id="itemcode_view"></span>
-       <input type="hidden" id="itemcode" name="itemcode">
-       <br>
-       <button type="submit">出品</button>
-      </form>
+      <!-- バーコード関連エリア -->
+      <div id="barcode_section">
+        <label>バーコード写真(任意):
+          <input type="file" id="barcodeImage" accept="image/*">
+        </label>
+        <br>
+        <img id="previewBarcodeImg" style="display:none;max-width:200px;max-height:200px;">
+        <button type="button" id="readBarcodeBtn">バーコード読取</button>
+        <span id="itemcode_view"></span>
+        <input type="hidden" id="itemcode" name="itemcode">
+      </div>
+      <button type="button" id="noBarcodeBtn">バーコードなしで出品</button>
+      <button type="button" id="backToBarcodeBtn" style="display:none;">バーコード読取で出品に戻る</button>
+      <br>
+      <button type="submit" id="submitBtn">出品</button>
+    </form>
+    <div id="listing-remain-view" style="display:none"></div>
   </div>
-
   <p id="msg"></p>
   <button onclick="location.href='product_list.html'">商品一覧へ戻る</button>
-
   <img id="previewImg" style="display:none;">
+<script>
+const S3_BUCKET_URL = "https://nes-hack-sample-1304hashigaya.s3.ap-southeast-2.amazonaws.com";
+const api = "https://dsgxgozuji.execute-api.ap-southeast-2.amazonaws.com/default/hackListing";
+const userid = localStorage.getItem("userid");
+let officialPrice = null;
+let maxPrice = null;
 
-  <script>
-    const S3_BUCKET_URL = "https://nes-hack-sample-1304hashigaya.s3.ap-southeast-2.amazonaws.com";
-    const api = "https://dsgxgozuji.execute-api.ap-southeast-2.amazonaws.com/default/hackListing";
-    const officialApi = api + "?itemcode="; // Lambda関数でGETリクエスト項目を実装
-    const userid = localStorage.getItem("userid");
-    let officialPrice = null; // 公式価格
-    let maxPrice = null;      // 公式価格の2倍上限
+if (!userid) {
+  alert("ログインユーザー情報がありません。再ログインしてください。");
+  location.href = "login.html";
+}
 
-    if (!userid) {
-      alert("ログインユーザー情報がありません。再ログインしてください。");
-      location.href = "login.html";
-    }
+// 「バーコードなしで出品」機能
+let noBarcodeMode = false;
+document.getElementById("noBarcodeBtn").onclick = async function() {
+  noBarcodeMode = true;
+  document.getElementById("barcode_section").style.display = "none";
+  backToBarcodeBtn.style.display = "inline-block";
+  noBarcodeBtn.style.display = "none";
+  const itemnameInput = document.getElementById("itemname");
+  itemnameInput.value = "";
+  itemnameInput.readOnly = false;
+  itemnameInput.style.background="#fff";
+  document.getElementById("itemcode_view").innerText = "";
+  document.getElementById("itemcode").value = "";
+  document.getElementById("limit_price_view").innerText = "";
+  document.getElementById("msg").innerText="バーコードなしモードです。出品は1か月3回までとなります。";
+  officialPrice = null; maxPrice = null;
 
-
-    // バーコード読取
-    document.getElementById("readBarcodeBtn").onclick = function(){
-      document.getElementById("itemcode_view").innerText = "";
-      document.getElementById("itemcode").value = "";
-      document.getElementById("itemname").innerText = "";
-      document.getElementById("itemname").readOnly = false;
-      document.getElementById("limit_price_view").innerText = "";
-      officialPrice = null;
-      maxPrice = null;
-
-      const file = document.getElementById("barcodeImage").files[0];
-      if(!file){
-        alert("バーコード画像を選択してください");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const image = document.getElementById("previewBarcodeImg");
-
-        // リトライ関数
-        let tryCount = 0;
-        const maxTries = 3;
-        function tryDecode(){
-          const codeReader = new ZXing.BrowserBarcodeReader();
-          codeReader.decodeFromImage(image)
-            .then(async result => {
-              const itemcode = result.text;
-              document.getElementById("itemcode_view").innerText = "バーコード値: " + itemcode;
-              document.getElementById("itemcode").value = itemcode;
-
-              // 公式商品APIへitemcode照会 (LambdaへのGETリクエスト)
-              let res = await fetch(api + "?itemcode=" + encodeURIComponent(itemcode));
-              if(res.ok){
-                let data = await res.json();
-                if(data && data.result === "ok" && data.itemname){
-                  document.getElementById("itemname").innerText = data.itemname;
-                  document.getElementById("itemname").readOnly = true;
-                  officialPrice = data.price;
-                  maxPrice = officialPrice * 2;
-                  document.getElementById("limit_price_view").innerText = `（公式価格: ${officialPrice} 円、出品上限: ${maxPrice} 円まで）`;
-                  document.getElementById("msg").innerText = "";
-                }else{
-                  document.getElementById("msg").innerText = "公式商品データベースに該当商品がありません。";
-                  document.getElementById("itemname").readOnly = false;
-                  document.getElementById("limit_price_view").innerText = "";
-                  officialPrice = null;
-                  maxPrice = null;
-                }
-              }
-            })
-            .catch(err => {
-              tryCount++;
-              if(tryCount < maxTries){
-                setTimeout(tryDecode, 100); // 100msごとに再試行
-              }else{
-                document.getElementById("itemcode_view").innerText = "バーコードを検出できませんでした（" + maxTries + "回試行）";
-                document.getElementById("itemname").readOnly = false;
-                document.getElementById("limit_price_view").innerText = "";
-                officialPrice = null;
-                maxPrice = null;
-              }
-            });
-        }
-
-        image.onload = function() {
-          tryDecode();
-        };
-        image.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    };
-
-
-    // 値段チェック
-    document.getElementById("price").addEventListener("input", function(){
-      if(maxPrice){
-        const v = parseInt(this.value);
-        if(v > maxPrice){
-          document.getElementById("msg").innerText = `価格は公式価格(${officialPrice}円)の2倍(${maxPrice}円)までにしてください`;
-        }else{
-          document.getElementById("msg").innerText = "";
-        }
-      }
-    });
-
-    // 商品画像選択時プレビュー
-    document.getElementById("image").addEventListener("change", function(){
-      const file = this.files[0];
-      const preview = document.getElementById("previewProductImg");
-      if(file){
-        const reader = new FileReader();
-        reader.onload = function(e){
-          preview.src = e.target.result;
-          preview.style.display = "inline";
-        };
-        reader.readAsDataURL(file);
-      } else {
-        preview.style.display = "none";
-        preview.src = "";
-      }
-    });
-
-    // バーコード画像選択時プレビュー
-    document.getElementById("barcodeImage").addEventListener("change", function(){
-      const file = this.files[0];
-      const preview = document.getElementById("previewBarcodeImg");
-      if(file){
-        const reader = new FileReader();
-        reader.onload = function(e){
-          preview.src = e.target.result;
-          preview.style.display = "inline";
-        };
-        reader.readAsDataURL(file);
-      } else {
-        preview.style.display = "none";
-        preview.src = "";
-      }
-    });
-
-
-    // 出品フォーム送信
-    document.getElementById("productForm").onsubmit = async function(e){
-      e.preventDefault();
-      document.getElementById("msg").innerText = "";
-
-      const file = document.getElementById("image").files[0];
-      if(!file){
-        document.getElementById("msg").innerText="画像を選択してください";
-        return;
-      }
-      const itemcode = document.getElementById("itemcode").value;
-      if(!itemcode){
-        document.getElementById("msg").innerText="バーコードの読取を完了してください";
-        return;
-      }
-      const price = parseInt(document.getElementById("price").value);
-      if(maxPrice && price > maxPrice){
-        document.getElementById("msg").innerText = `価格は公式価格(${officialPrice}円)の2倍(${maxPrice}円)までにしてください`;
-        return;
-      }
-      if(price <= 0){
-        document.getElementById("msg").innerText = "価格を1円以上で入力してください";
-        return;
-      }
-
-      const fileName = "product_image_" + Date.now() + "_" + Math.floor(Math.random()*10000) + "." + file.name.split('.').pop();
-      const uploadUrl = S3_BUCKET_URL + "/image/" + fileName;
-      let uploadRes = await fetch(uploadUrl, {
-        method:"PUT",
-        body:file,
-        headers:{"Content-Type":file.type}
-      });
-      if(uploadRes.status !== 200 && uploadRes.status !== 201){
-        document.getElementById("msg").innerText="画像のアップロードに失敗しました";
-        return;
-      }
-
-      const form = e.target;
-      let body = {
-        itemname: document.getElementById("itemname").innerText,
-        detail: form.detail.value,
-        price: price,
-        image_url: uploadUrl,
-        userid: parseInt(userid),
-        itemcode: itemcode
-      };
-      let res = await fetch(api, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(body)
-      });
+  /*
+  // 残り出品可能回数を取得
+  const remainView = document.getElementById("listing-remain-view");
+  try {
+    let res = await fetch(api + "?userid=" + encodeURIComponent(userid) + "&type=nobarcode_count");
+    if(res.ok){
       let data = await res.json();
-      if(data.result==="ok"){
-        location.href = "product_list.html";
+      let cnt = data && data.count !== undefined ? parseInt(data.count) : 0;
+      let remain = 3 - cnt;
+      if(remain > 0) {
+        remainView.style.display = "block";
+        remainView.innerText = `バーコードなし出品の残り可能回数：${remain}回`;
+      } else {
+        remainView.style.display = "block";
+        remainView.innerText = `バーコードなし出品は今月上限3回に達しました`;
       }
-      else if(data.result==="duplicate"){
-        document.getElementById("msg").innerText="このバーコードの商品は既に出品済みです（同じバーコードの商品を複数回は出品できません）";
+    } else {
+      remainView.style.display = "none";
+    }
+  } catch(e) {
+    remainView.style.display = "none";
+  }
+};
+*/
+
+const remainView = document.getElementById("listing-remain-view");
+try {
+  let res = await fetch(api + "?userid=" + encodeURIComponent(userid) + "&type=nobarcode_count");
+  if(res.ok){
+    let data = await res.json();
+    let cnt = data && data.count !== undefined ? parseInt(data.count) : 0;
+    let remain = 3 - cnt;
+    remainView.style.display = "block";
+    if (remain > 0) {
+      if (remain === 1) {
+        remainView.className = "limit-warning";
+        remainView.innerText = `⚠️ 残り1回です！今月「バーコードなし」で出品できるのは、あと1回だけです。`;
+      } else {
+        remainView.className = "";
+        remainView.innerText = `バーコードなしで今月あと${remain}回、出品できます。`;
       }
-      else if(data.result==="price_ng"){
-        document.getElementById("msg").innerText="価格が公式価格の2倍を超えています。";
-      }
-      else{
-        document.getElementById("msg").innerText="商品登録に失敗しました: "+ (data.message || '');
-      }
+    } else {
+      remainView.className = "limit-warning";
+      remainView.innerText = `❌ 今月の「バーコードなし」出品回数（3回）に達しました。\n申し訳ありませんが翌月までご利用できません。`;
+    }
+  } else {
+    remainView.style.display = "none";
+  }
+} catch(e) {
+  remainView.style.display = "none";
+}
+};
+
+// 戻るボタンの動作追加
+backToBarcodeBtn.onclick = function() {
+  noBarcodeMode = false;
+  document.getElementById("barcode_section").style.display = "";
+  backToBarcodeBtn.style.display = "none";
+  noBarcodeBtn.style.display = "inline-block";
+  // 入力欄リセットやmsg・残数表示消す
+  const itemnameInput = document.getElementById("itemname");
+  itemnameInput.value = "";
+  itemnameInput.readOnly = false;
+  itemnameInput.style.background="#fff";
+  document.getElementById("itemcode_view").innerText = "";
+  document.getElementById("itemcode").value = "";
+  document.getElementById("limit_price_view").innerText = "";
+  document.getElementById("msg").innerText = "";
+  document.getElementById("listing-remain-view").style.display = "none";
+  officialPrice = null; maxPrice = null;
+};
+
+// バーコード読取
+document.getElementById("readBarcodeBtn").onclick = function(){
+  noBarcodeMode = false;
+  document.getElementById("barcode_section").style.display = "";
+  backToBarcodeBtn.style.display = "none";
+  noBarcodeBtn.style.display = "inline-block";
+  document.getElementById("itemcode_view").innerText = "";
+  document.getElementById("itemcode").value = "";
+  const itemnameInput = document.getElementById("itemname");
+  itemnameInput.value = "";
+  itemnameInput.readOnly = false;
+  itemnameInput.style.background="#fff";
+  document.getElementById("limit_price_view").innerText = "";
+  officialPrice = null;
+  maxPrice = null;
+  const file = document.getElementById("barcodeImage").files[0];
+  if(!file){
+    alert("バーコード画像を選択してください");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const image = document.getElementById("previewBarcodeImg");
+    let tryCount = 0;
+    const maxTries = 3;
+    function tryDecode(){
+      const codeReader = new ZXing.BrowserBarcodeReader();
+      codeReader.decodeFromImage(image)
+        .then(async result => {
+          const itemcode = result.text;
+          document.getElementById("itemcode_view").innerText = "バーコード値: " + itemcode;
+          document.getElementById("itemcode").value = itemcode;
+          // 公式products照会APIへitemcode照会
+          let res = await fetch(api + "?itemcode=" + encodeURIComponent(itemcode));
+          if(res.ok){
+            let data = await res.json();
+            if(data && data.result === "ok" && data.itemname){
+              // 商品名を自動入力し編集不可
+              itemnameInput.value = data.itemname;
+              itemnameInput.readOnly = true;
+              itemnameInput.style.background="#eef";
+              officialPrice = data.price;
+              maxPrice = officialPrice * 2;
+              document.getElementById("limit_price_view").innerText = `（公式価格: ${officialPrice} 円、出品上限: ${maxPrice} 円まで）`;
+              document.getElementById("msg").innerText = "";
+            }else{
+              // 商品名は手入力可
+              itemnameInput.value = "";
+              itemnameInput.readOnly = false;
+              itemnameInput.style.background="#fff";
+              document.getElementById("msg").innerText = "公式商品データベースに該当商品がありません。商品名を入力し出品してください。";
+              document.getElementById("limit_price_view").innerText = "";
+              officialPrice = null;
+              maxPrice = null;
+            }
+          }
+        })
+        .catch(err => {
+          tryCount++;
+          if(tryCount < maxTries){
+            setTimeout(tryDecode, 100);
+          }else{
+            document.getElementById("itemcode_view").innerText = "バーコードを検出できませんでした（" + maxTries + "回試行）";
+            itemnameInput.readOnly = false;
+            itemnameInput.style.background="#fff";
+            document.getElementById("limit_price_view").innerText = "";
+            officialPrice = null;
+            maxPrice = null;
+          }
+        });
+    }
+    image.onload = function() { tryDecode(); };
+    image.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+// 値段チェック
+document.getElementById("price").addEventListener("input", function(){
+  if(maxPrice){
+    const v = parseInt(this.value);
+    if(v > maxPrice){
+      document.getElementById("msg").innerText = `価格は公式価格(${officialPrice}円)の2倍(${maxPrice}円)までにしてください`;
+    }else{
+      document.getElementById("msg").innerText = "";
+    }
+  }
+});
+
+// 商品画像プレビュー
+document.getElementById("image").addEventListener("change", function(){
+  const file = this.files[0];
+  const preview = document.getElementById("previewProductImg");
+  if(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      preview.src = e.target.result;
+      preview.style.display = "inline";
     };
-  </script>
+    reader.readAsDataURL(file);
+  } else {
+    preview.style.display = "none";
+    preview.src = "";
+  }
+});
+
+// バーコード画像プレビュー
+document.getElementById("barcodeImage").addEventListener("change", function(){
+  const file = this.files[0];
+  const preview = document.getElementById("previewBarcodeImg");
+  if(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      preview.src = e.target.result;
+      preview.style.display = "inline";
+    };
+    reader.readAsDataURL(file);
+  } else {
+    preview.style.display = "none";
+    preview.src = "";
+  }
+});
+
+// 出品フォーム送信
+document.getElementById("productForm").onsubmit = async function(e){
+  e.preventDefault();
+  document.getElementById("msg").innerText = "";
+
+  // 必須チェック
+  const file = document.getElementById("image").files[0];
+  const itemname = document.getElementById("itemname").value.trim();
+  if(!file){ document.getElementById("msg").innerText="画像を選択してください"; return; }
+  if(!itemname){ document.getElementById("msg").innerText="商品名を入力してください"; return; }
+  const price = parseInt(document.getElementById("price").value);
+  if(maxPrice && price > maxPrice){
+    document.getElementById("msg").innerText = `価格は公式価格(${officialPrice}円)の2倍(${maxPrice}円)までにしてください`;
+    return;
+  }
+  if(price <= 0){
+    document.getElementById("msg").innerText = "価格を1円以上で入力してください";
+    return;
+  }
+  const itemcode = document.getElementById("itemcode").value || '';
+
+  // バーコードなし商品の月3件制限
+  if(!itemcode){
+    let countRes = await fetch(api + "?userid=" + encodeURIComponent(userid) + "&type=nobarcode_count");
+    if(countRes.ok){
+      let countData = await countRes.json();
+      const currentCount = (countData && countData.count) || 0;
+      if(currentCount >= 3){
+        document.getElementById("msg").innerText = "バーコードなしの商品は、今月は3件までしか出品できません。";
+        return;
+      }
+    }
+  }
+
+  // 画像アップロード
+  const fileName = "product_image_" + Date.now() + "_" + Math.floor(Math.random()*10000) + "." + file.name.split('.').pop();
+  const uploadUrl = S3_BUCKET_URL + "/image/" + fileName;
+  let uploadRes = await fetch(uploadUrl, {
+    method:"PUT",
+    body:file,
+    headers:{"Content-Type":file.type}
+  });
+  if(uploadRes.status !== 200 && uploadRes.status !== 201){
+    document.getElementById("msg").innerText="画像のアップロードに失敗しました";
+    return;
+  }
+
+  // 商品登録
+  let body = {
+    itemname: itemname,
+    detail: document.getElementById("productForm").detail.value,
+    price: price,
+    image_url: uploadUrl,
+    userid: parseInt(userid),
+    itemcode: itemcode // 空文字でもOK
+  };
+  let res = await fetch(api, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+  let data = await res.json();
+  if(data.result==="ok"){
+    location.href = "product_list.html";
+  }
+  else if(data.result==="duplicate"){
+    document.getElementById("msg").innerText="このバーコードの商品は既に出品済みです（同じバーコードの商品を複数回は出品できません）";
+  }
+  else if(data.result==="price_ng"){
+    document.getElementById("msg").innerText="価格が公式価格の2倍を超えています。";
+  }
+  else if(data.result==="nobarcode_limit"){
+    document.getElementById("msg").innerText="バーコードなし商品の出品上限（月3回）を超えています";
+  }
+  else{
+    document.getElementById("msg").innerText="商品登録に失敗しました: "+ (data.message || '');
+  }
+};
+</script>
 </body>
 </html>

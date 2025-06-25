@@ -6,7 +6,19 @@
     <link rel="stylesheet" href="style.css">
   <link rel="icon" href="icon.png" type="image/png">
 </head>
+  <style>
+    body {padding-top: 68px; /* headerの高さと揃える */}
+  </style>
 <body>
+<!-- ▼ ヘッダー -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="product_list.html" class="cute-logo">
+      <img src="logo.png" alt="転売イヤーのロゴ">
+    </a>
+  </div>
+</header>
+
     <h2>商品詳細</h2>
     <div id="content"></div>
     <script>
@@ -41,10 +53,12 @@
                 fetch(API_purchase, {
                     method:'POST',
                     headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({itemid})
+                    body:JSON.stringify({itemid
+                      ,userid
+                    })
                 })
                 .then(res => res.json()).then(res => {
-                    location.href = 'purchase.html?price=' + product.price;
+                    location.href = 'purchase.html?itemid=' + itemid + '&price=' + product.price;
                 });
             });
         }

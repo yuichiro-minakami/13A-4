@@ -25,19 +25,32 @@
     <link rel="icon" href="icon.png" type="image/png">
 </head>
 <body>
-<!-- 画面のなるべく中央寄りの上に配置したい場合 -->
+
+<!-- ▼ ヘッダー -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="product_list.html" class="cute-logo">
+      <img src="logo.png" alt="転売イヤーのロゴ">
+    </a>
+  </div>
+</header>
+
+<!-- メニュー -->
 <div class="menu-dots" onclick="toggleMenu()">
   <span class="bar"></span>
   <span class="bar"></span>
   <span class="bar"></span>
 </div>
 <div id="dropdown" class="dropdown-menu">
-    <!-- <a href="product_list.html">商品一覧</a> -->
     <a href="add_product.html">商品を出品</a>
+    <a href="chat_list.html">チャット</a>
     <a href="login.html" onclick="localStorage.removeItem('userid')">ログアウト</a>
 </div>
+
 <div class="container">
     <h1>商品一覧</h1>
+    <!-- ↑ここにページネーション上部を追加 -->
+    <div id="pagination-top" class="pagination"></div>
     <!-- フィルターボタンを検索の上に追加 -->
     <div class="filter-bar" style="margin: 10px 0;">
         <button class="filter-btn" data-bs="">すべて</button>
@@ -51,6 +64,8 @@
     </div>
     <div id="products" class="products"></div>
     <div id="noResult" style="color:#c00; display:none;">見つかりませんでした</div>
+    <!-- 下部にもページネーション -->
+    <div id="pagination" class="pagination"></div>
 </div>
 
 <script>
@@ -70,11 +85,9 @@ function toggleMenu(){
     const rect = btn.getBoundingClientRect();
 
     if (!menu.classList.contains('show')) {
-        // メニュー位置調整 (rect.right, rect.bottom)
-        menu.style.left = rect.right - 150 + "px"; // メニュー幅にあわせてleftを調整
+        menu.style.left = rect.right - 150 + "px";
         menu.style.top  = rect.bottom + 6 + "px";
         menu.classList.add('show');
-        //他クリックで閉じる
         document.addEventListener('mousedown', closeMenuWhenOutside);
     } else {
         menu.classList.remove('show');
@@ -94,7 +107,6 @@ function createProductHtml(item) {
     const imgUrl = item.image_url;
     const sold = item.buystatus == 1;
     const itemnameClass = sold ? "itemname sold" : "itemname";
-    
     return `
         <div class="item"
             data-itemid="${item.itemid}" 
@@ -109,9 +121,13 @@ function createProductHtml(item) {
     `;
 }
 
-// フィルター状態グローバル変数
-let nowBuyStatus = ""; // "", "0", "1"
+// ページネーションの実装用変数
+let nowBuyStatus = ""; // フィルター
+let allProducts = [];
+let currentPage = 1;
+const PER_PAGE = 15;
 
+// 商品データ取得・ページ分割
 function fetchProducts(keyword='', buystatus='') {
     let url = API_URL;
     let params = [];
@@ -121,37 +137,99 @@ function fetchProducts(keyword='', buystatus='') {
     fetch(url)
     .then(resp => resp.json())
     .then(data => {
-        const productsEl = document.getElementById('products');
         if (!data || !Array.isArray(data) || data.length === 0) {
-            productsEl.innerHTML = '';
+            allProducts = [];
+            document.getElementById('products').innerHTML = '';
+            document.getElementById('pagination').innerHTML = '';
+            document.getElementById('pagination-top').innerHTML = '';
             document.getElementById('noResult').style.display = 'block';
             return;
         }
         document.getElementById('noResult').style.display = 'none';
 
         data.sort((a, b) => a.buystatus - b.buystatus);
-
-        productsEl.innerHTML = data.map(createProductHtml).join('');
-
-        document.querySelectorAll('.item').forEach(itemDiv => {
-            if(itemDiv.dataset.sold !== "true"){
-                itemDiv.style.cursor = "pointer";
-                itemDiv.addEventListener('click', function(){
-                    const itemid = this.dataset.itemid;
-                    window.location.href = `/product_detail.html?itemid=${itemid}`;
-                });
-            }else{
-                itemDiv.style.cursor = "default";
-            }
-        });
+        allProducts = data;
+        currentPage = 1; // フィルタ・検索時に1ページ目に戻す
+        showPage(currentPage);
     })
     .catch(err => {
         alert("エラー：" + err);
     });
 }
 
+// 指定ページ分だけ表示
+function showPage(page) {
+    const start = (page - 1) * PER_PAGE;
+    const end = start + PER_PAGE;
+    const productsEl = document.getElementById('products');
+    const pageProducts = allProducts.slice(start, end);
+
+    productsEl.innerHTML = pageProducts.map(createProductHtml).join('');
+    document.querySelectorAll('.item').forEach(itemDiv => {
+        if(itemDiv.dataset.sold !== "true"){
+            itemDiv.style.cursor = "pointer";
+            itemDiv.addEventListener('click', function(){
+                const itemid = this.dataset.itemid;
+                window.location.href = `/product_detail.html?itemid=${itemid}`;
+            });
+        }else{
+            itemDiv.style.cursor = "default";
+        }
+    });
+
+    renderPagination();
+}
+
+// 上下両方にページネーションUI
+function renderPagination() {
+    const pagElTop = document.getElementById('pagination-top');
+    const pagEl = document.getElementById('pagination');
+    pagElTop.innerHTML = '';
+    pagEl.innerHTML = '';
+    if (allProducts.length <= PER_PAGE) return;
+
+    const totalPages = Math.ceil(allProducts.length / PER_PAGE);
+    let html = '';
+
+    // 前へ
+    if (currentPage > 1) {
+        html += `<button class="pagination-btn prev" data-page="${currentPage-1}">&lt;</button>`;
+    }
+    // ページ番号 最大7個まで中央寄せ
+    let from = Math.max(1, currentPage - 2);
+    let to = Math.min(totalPages, currentPage + 2);
+
+    if (from > 1) {
+        html += `<button class="pagination-btn" data-page="1">1</button>`;
+        if (from > 2) html += `<span class="pagination-ellipsis">...</span>`;
+    }
+    for (let i = from; i <= to; i++) {
+        html += `<button class="pagination-btn${i===currentPage?' selected':''}" data-page="${i}">${i}</button>`;
+    }
+    if (to < totalPages) {
+        if (to < totalPages-1) html += `<span class="pagination-ellipsis">...</span>`;
+        html += `<button class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
+    }
+    // 次へ
+    if (currentPage < totalPages) {
+        html += `<button class="pagination-btn next" data-page="${currentPage+1}">&gt;</button>`;
+    }
+    pagElTop.innerHTML = html;
+    pagEl.innerHTML = html;
+
+    document.querySelectorAll('.pagination-btn').forEach(btn => {
+        btn.onclick = function() {
+            const p = Number(this.dataset.page);
+            if (!isNaN(p)) {
+                currentPage = p;
+                showPage(currentPage);
+                window.scrollTo({top:0, behavior:'smooth'});
+            }
+        };
+    });
+}
+
 window.onload = function() {
-    // フィルター(購入/未購入)ボタン制御
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('selected'));
@@ -161,7 +239,6 @@ window.onload = function() {
             fetchProducts(kw, nowBuyStatus);
         });
     });
-    // 初期は「両方」ボタンをactive
     document.querySelector('.filter-btn[data-bs=""]').classList.add('selected');
 
     fetchProducts();

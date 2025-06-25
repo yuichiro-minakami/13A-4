@@ -55,14 +55,46 @@
   .login-center-wrapper {
     background: transparent !important;
   }
+
+  /* ログイン時のみ画面全体がフェードアウト＋グラデーション（★追加部分） */
+  .login-fadeout {
+    pointer-events: none;
+    animation: loginfadeoutbg 0.65s cubic-bezier(.5,0,.5,1) forwards;
+  }
+  .login-fade-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+    background: linear-gradient(120deg, #ffe4ec 0%, #e6e8fc 100%);
+    opacity: 0;
+    pointer-events: none;
+    animation: loginfadeoverlay 0.55s 0.05s cubic-bezier(.6,.14,.38,1) forwards;
+    display: none;
+  }
+  @keyframes loginfadeoutbg {
+    0% { opacity:1; }
+    60% { opacity:1; }
+    100% { opacity:0; }
+  }
+  @keyframes loginfadeoverlay {
+    0% { opacity: 0; }
+    35% { opacity: 0.6; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+  }
   </style>
 </head>
 <body>
   <div class="login-center-wrapper">
     <div class="login-card">
       <div class="login-app-header">
-        <img class="login-app-icon" src="icon.png" alt="アプリアイコン">
-        <div class="login-app-name">転売イヤー</div>
+        <!-- <img class="login-app-icon" src="icon.png" alt="アプリアイコン"> -->
+        <div class="login-app-name">
+          <img src="logo.png" alt="転売イヤー">
+        </div>
         <div class="login-title">ログイン</div>
       </div>
       <form id="loginForm" class="login-form">
@@ -77,10 +109,12 @@
       <p id="loginError" class="login-error"></p>
       <div class="login-btns">
         <button class="login-sub-btn" type="button" onclick="location.href='register.html'">新規登録</button>
-        <button class="login-sub-btn" type="button" onclick="alert('パスワードリセットは未実装')">パスワードリセット</button>
+        <button class="login-sub-btn" type="button" onclick="location.href='password_reset.html'">パスワードリセット</button>
       </div>
     </div>
   </div>
+  <!-- ★ログイン遷移時のフェード＆グラデ用 overlay -->
+  <div id="loginFadeOverlay" class="login-fade-overlay"></div>
   <script>
     document.getElementById("loginForm").onsubmit = async function(e){
       e.preventDefault();
@@ -100,11 +134,17 @@
           document.getElementById("loginError").innerText = "内部エラー: ユーザーIDが取得できませんでした";
           return;
         }
-        location.href = "product_list.html";
+        // ↓↓↓↓↓ 以下、アニメーション追加部分 ↓↓↓↓↓
+        document.body.classList.add("login-fadeout");
+        var overlay = document.getElementById("loginFadeOverlay");
+        overlay.style.display = "block";
+        setTimeout(function(){
+          location.href = "product_list.html";
+        }, 680);
+        // ↑↑↑↑↑ アニメーション追加部分ここまで ↑↑↑↑↑
       } else {
         document.getElementById("loginError").innerText = data.message || "ログインに失敗しました";
       }
     }
   </script>
-</body>
-</html>
+</body

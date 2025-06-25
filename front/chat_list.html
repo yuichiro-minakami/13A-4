@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>チャットルーム一覧</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+    .cr-unread-badge {
+        position: absolute;
+        left: 6px;
+        top: 6px;
+        background: #e06ca0;
+        color: #fff;
+        font-weight: bold;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        text-align: center;
+        line-height: 24px;
+        font-size: 1em;
+        box-shadow: 0 1px 7px #e06ca07a;
+        border: 2px solid #fff;
+        z-index: 3;
+    }
+    .cr-room-card {
+        position: relative;
+    }
+    </style>
+</head>
+<body>
+    <h2 class="cr-title">チャットルーム一覧</h2>
+    <div class="cr-room-list" id="chatRooms"></div>
+    <div class="cr-btn-area">
+        <button onclick="location.href='product_list.html'">商品一覧へ戻る</button>
+    </div>
+<script>
+const userid = localStorage.getItem("userid");
+if (!userid) {
+    alert("ログインユーザー情報がありません。再ログインしてください。");
+    location.href = "login.html";
+}
+
+
+async function loadChatRooms() {
+    const res = await fetch(`https://jqiufvqui0.execute-api.ap-southeast-2.amazonaws.com/hackChatlist?userid=${userid}`);
+    const data = await res.json();
+    const rooms = Array.isArray(data) ? data : [];
+    const cont = document.getElementById("chatRooms");
+    if (rooms.length === 0) {
+        cont.innerHTML = `<div class="cr-no-chat-msg">チャット可能な商品がありません。</div>`;
+        return;
+    }
+
+    // sort
+    rooms.sort((a, b) => {
+        const aActive = (a.role === "seller" && a.buystatus == 1 && a.partnername) || a.role === "buyer";
+        const bActive = (b.role === "seller" && b.buystatus == 1 && b.partnername) || b.role === "buyer";
+        return (bActive?1:0) - (aActive?1:0);
+    });
+
+    cont.innerHTML = rooms.map(room => {
+        const isActive = !(
+            room.role === "seller" && (room.buystatus != 1 || !room.partnername)
+        );
+        const unread = room.unread_count > 0 ?
+            `<div class="cr-unread-badge">${room.unread_count}</div>` : "";
+        return `
+        <div class="cr-room-card${isActive ? "" : " cr-inactive"}">
+            ${unread}
+            <div class="cr-card-img-wrap">
+                <img src="${room.image_url}" class="cr-card-img" alt="">
+            </div>
+            <div class="cr-card-main">
+                <div class="cr-card-itemname">${room.itemname}</div>
+                <div class="cr-card-price">¥${Number(room.price).toLocaleString()}</div>
+                <div class="cr-card-user">
+                    ${room.role === 'seller'
+                        ? `購入者：${room.partnername ? room.partnername : `<span class="cr-waiting-text">（まだ購入者はいません）</span>`}`
+                        : `出品者：${room.partnername}`
+                    }
+                </div>
+            </div>
+            <div class="cr-card-action">
+                ${isActive
+                    ? `<button class="cr-chat-btn" onclick="event.stopPropagation();location.href='chat.html?itemid=${room.itemid}&price=${room.price}'">チャットする</button>`
+                    : `<div class="cr-chat-unavailable">チャット不可</div>`}
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+window.onload = loadChatRooms;
+</script>
+</body>
+</html>
