@@ -130,8 +130,6 @@
         font-weight: 500;
         box-sizing: border-box;
         }
-        /* 商品一覧ボタン専用の強制上書き。style.cssで!importantされているため、ここでも!importantで上書きする */
-        .button-area .in-list
 
     </style>
 </head>
@@ -159,6 +157,19 @@
         // 商品情報簡易表示
         document.getElementById('productInfo').textContent = `商品番号: ${itemid}　価格: ${price ? Number(price).toLocaleString()+'円' : ""}`;
 
+
+        // チャット取得後に既読化する
+        async function markAsRead() {
+            await fetch('https://adiw2kabp8.execute-api.ap-southeast-2.amazonaws.com/hackChatRead', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    itemid: itemid,
+                    userid: userid
+                })
+            });
+        }
+
         // チャットロード
         async function loadChat() {
             const res = await fetch('https://zo7y44s5ih.execute-api.ap-southeast-2.amazonaws.com/hackChat?itemid='+itemid);
@@ -172,6 +183,7 @@
                 chatBox.appendChild(div);
             });
             chatBox.scrollTop = chatBox.scrollHeight;
+            await markAsRead();
         }
         loadChat();
 
