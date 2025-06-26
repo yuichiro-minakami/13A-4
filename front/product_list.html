@@ -33,19 +33,18 @@
       <img src="logo.png" alt="転売イヤーのロゴ">
     </a>
   </div>
+  <!-- メニュー -->
+    <div class="menu-dots" onclick="toggleMenu()">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+    </div>
+    <div id="dropdown" class="dropdown-menu">
+        <a href="add_product.html">商品を出品</a>
+        <a href="chat_list.html">チャット</a>
+        <a href="login.html" onclick="localStorage.removeItem('userid')">ログアウト</a>
+    </div>
 </header>
-
-<!-- メニュー -->
-<div class="menu-dots" onclick="toggleMenu()">
-  <span class="bar"></span>
-  <span class="bar"></span>
-  <span class="bar"></span>
-</div>
-<div id="dropdown" class="dropdown-menu">
-    <a href="add_product.html">商品を出品</a>
-    <a href="chat_list.html">チャット</a>
-    <a href="login.html" onclick="localStorage.removeItem('userid')">ログアウト</a>
-</div>
 
 <div class="container">
     <h1>商品一覧</h1>

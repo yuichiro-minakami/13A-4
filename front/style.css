@@ -1,0 +1,1636 @@
+/* 基本設定 */
+:root {
+    --primary-font: 'Nunito', 'M PLUS Rounded 1c', 'Yu Gothic', Meiryo, sans-serif;
+    --secondary-bg: #fff6fa;
+    --product-bg: #faf8f2;
+    --item-bg: #fff;
+    --border-color: #e0e0e0;
+    --template-border-color: #f7b7d8;
+    --text-color: #555;
+    --primary-link: #007aff;
+    --hover-link: #ea8cbd;
+    --box-shadow-default: 0 6px 18px #ffe3ee;
+    --shadow-light: 0 1px 4px #e3e3e3;
+}
+
+body {
+    font-family: var(--primary-font);
+    background: var(--secondary-bg);
+    margin: 0;
+    padding: 40px;
+}
+
+/* コンテナ */
+.container {
+    width: 900px;
+    margin: 32px auto;
+    padding: 20px;
+    background: var(--product-bg);
+    border-radius: 18px;
+    box-shadow: var(--box-shadow-default);
+}
+
+/* ヘッダー */
+h1, h2 {
+    text-align: center;
+    color: #e06ca0;
+    font-family: var(--primary-font);
+    letter-spacing: 2px;
+    margin-bottom: 28px;
+}
+
+/* ログイン */
+.login-container {
+    max-width: 600px; /* 必要に応じてサイズを調整 */
+    margin: 0 auto; /* 水平方向の中央揃え */
+    padding: 20px;
+    text-align: center; /* 中央揃えになった要素内のテキストを左揃えに戻す */
+    display: block; /* ブロック要素として中央揃え */
+    /*background-color: var(--product-bg); /* 背景色を付ける場合 */
+    border-radius: 10px; /* 枠線角を丸くする場合 */
+}
+
+/*出品*/
+.add-container {
+    max-width: 600px; /* 必要に応じてサイズを調整 */
+    margin: 0 auto; /* 水平方向の中央揃え */
+    padding: 20px;
+    text-align: center; /* 中央揃えになった要素内のテキストを左揃えに戻す */
+    display: block; /* ブロック要素として中央揃え */
+    /*background-color: var(--product-bg); /* 背景色を付ける場合 */
+    border-radius: 10px; /* 枠線角を丸くする場合 */
+}
+
+/* フォーム要素の配置 */
+#loginForm {
+    display: inline-block;
+}
+
+#loginError {
+    margin-top: 10px;
+    text-align: left; /* エラーメッセージを左揃え */
+}
+
+
+/* =====（product_list.html用） ===== */
+
+/* 検索バー */
+.search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+}
+
+.search-bar input[type="text"] {
+    border-radius: 16px;
+    border: 1.5px solid var(--template-border-color);
+    padding: 8px 14px;
+    font-size: 1.1em;
+    background: var(--item-bg);
+    transition: border 0.2s;
+}
+
+.search-bar input[type="text"]:focus {
+    outline: none;
+    border: 2px solid #eda3c6;
+}
+
+.search-bar button {
+    background: #f8acd5;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.08em;
+    padding: 7px 22px;
+    box-shadow: 0 2px 8px #ffdbe8;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.search-bar button:hover {
+    background: var(--hover-link);
+}
+
+/* 商品グリッドとアイテム */
+.products {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    justify-items: center;
+}
+
+.item {
+    background: var(--item-bg);
+    border: none;
+    border-radius: 22px;
+    padding: 24px 14px;
+    text-align: center;
+    min-height: 340px;
+    box-shadow: 0 6px 18px #ffd6e0;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.11s;
+    position: relative;
+}
+
+.item:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 10px 28px #fab6ca;
+}
+
+.item img {
+    width: 170px;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 18px;
+    background: var(--secondary-bg);
+    margin-bottom: 10px;
+    border: 3px solid #ffe2ef;
+    box-shadow: 0 2px 8px #fdd1de;
+}
+
+/* アイテムテキスト */
+.itemname {
+    display: block;
+    font-size: 1.25rem; /* 元の1.25remを優先 */
+    margin: 14px 0 6px;
+    color: var(--primary-link);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.itemname.sold {
+    color: #999;
+    text-decoration: none;
+    cursor: default;
+}
+
+.price {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin-bottom: 6px;
+}
+
+/* その他コンポーネント */
+.soldout {
+    color: #fff;
+    background: #ee5555;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.reset-btn {
+    margin-left: 8px;
+}
+
+.dropdown-menu {
+    display: none;
+    position: fixed;  /* fixed推奨: スクロール追従のため */
+    min-width: 160px;
+    background: #fff;
+    box-shadow: 0 0 8px #ddd;
+    border-radius: 8px;
+    z-index: 9999;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 8px;
+}
+
+.menu-dots {
+    position: absolute;
+    top: 48px;         /* もっと中央にしたい場合は数値を増減 */
+    right: 50%;        /* 画面中央から */
+    transform: translateX(630px); /* 調整用（container幅によるので好みで増減） */
+    width: 36px;
+    height: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+}
+.menu-dots {
+    position: absolute;
+    top: 40px;
+    right: 50%;
+    transform: translateX(550px);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+}
+.menu-dots .bar {
+    width: 28px;
+    height: 4px;
+    background: #e06ca0;
+    margin: 3px 0;
+    border-radius: 2px;
+    transition: 0.21s;
+}
+
+
+/* 画面幅900px以下で2カラムに+検索・フィルター縦並び */
+@media (max-width: 900px) {
+  .products {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .item {
+    width: 90vw;
+    max-width: 280px;
+    min-height: 310px;
+    padding: 18px 5px;
+  }
+  .filter-bar,
+  .search-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .search-bar {
+    margin-bottom: 22px;
+  }
+}
+
+/* 画面幅600px以下では1カラム＋アイテム縮小＋バー縦並び */
+@media (max-width: 600px) {
+  .products {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .item {
+    width: 96vw;
+    max-width: 345px;
+    min-height: 260px;
+    padding: 10px 2px;
+  }
+  .item img {
+    width: 70vw;
+    max-width: 120px;
+    height: 120px;
+  }
+  .itemname {
+    font-size: 1.1rem;
+  }
+  .site-header .header-inner img {
+    max-width: 120px;
+    height: auto;
+  }
+  .search-bar,
+  .filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 7px;
+  }
+}
+
+/* スマホでメニュードットも中央右寄せに調整 */
+@media (max-width: 900px) {
+  .menu-dots {
+    right: 14px !important;
+    left: auto !important;
+    transform: none !important;
+    top: 28px;
+  }
+}
+
+
+/* ===== ログイン専用クラス（login.html用） ===== */
+.login-center-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.login-card {
+    background: var(--item-bg);
+    padding: 2.5rem 2rem 2rem 2rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 28px rgba(32,52,89,0.11),
+                0 1.5px 6px rgba(60,70,100,0.08),
+                var(--box-shadow-default);
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.login-app-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.login-app-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+    margin-bottom: 0.7rem;
+    object-fit: cover;
+}
+
+.login-app-name {
+    font-size: 1.45rem;
+    letter-spacing: 0.04em;
+    color: #e06ca0;
+    font-weight: bold;
+    margin: 0 0 0.3rem 0;
+    text-shadow: 0 1px 2px rgba(180,180,180,0.08);
+    font-family: var(--primary-font);
+}
+
+.login-title {
+    font-size: 1.2rem;
+    color: #e06ca0;
+    font-weight: 500;
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.02em;
+    font-family: var(--primary-font);
+}
+
+.login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.login-label {
+    font-size: .95rem;
+    color: #555;
+    margin-bottom: 0.3rem;
+    display: flex;
+    flex-direction: column;
+    font-weight: 500;
+    gap: 0.4em;
+    font-family: var(--primary-font);
+}
+
+.login-input {
+    appearance: none;
+    padding: 0.8em;
+    border-radius: 8px;
+    border: 1px solid var(--template-border-color);
+    background: var(--product-bg);
+    font-size: 1rem;
+    outline: none;
+    margin-top: 0.1em;
+    transition: border 0.2s;
+    font-family: var(--primary-font);
+    color: #555;
+}
+.login-input:focus {
+    border-color: #e06ca0;
+    background: #fff6fa;
+}
+
+.login-btn {
+    padding: 0.7em 1.1em;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(90deg, #e06ca0 70%, #edbad6 100%);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 0.2em;
+    letter-spacing: 0.02em;
+    box-shadow: 0 2px 7px #ffdbe8;
+    cursor: pointer;
+    transition: background .16s;
+    width: 100%;
+    font-family: var(--primary-font);
+}
+.login-btn:hover {
+    background: linear-gradient(90deg, #edbad6 30%, #e06ca0 100%);
+}
+
+.login-btns {
+    display: flex;
+    gap: 0.7em;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 0.7em;
+}
+.login-sub-btn {
+    background: #fff6fa;
+    color: #e06ca0;
+    border: 1px solid #ffdbe8;
+    box-shadow: none;
+    font-weight: 500;
+    transition: background 0.13s, color 0.13s;
+    width: 48.5%;
+    padding: 0.55em 0;
+    font-family: var(--primary-font);
+}
+.login-sub-btn:hover {
+    background: #ffe2ef;
+    color: #c0598f;
+}
+
+.login-error, #loginError {
+    color: #e13250;
+    font-size: 0.98rem;
+    min-height: 1.1em;
+    letter-spacing: 0.01em;
+    text-align: center;
+    font-weight: 500;
+    margin-top: -0.5em;
+    font-family: var(--primary-font);
+}
+
+@media (max-width: 420px) {
+    .login-card {
+        width: 95vw;
+        min-width: 0;
+        padding: 1.3rem 0.7rem;
+    }
+}
+
+
+/* ========== register.html & register_complete.html用 =========== */
+.register-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content:center;
+  align-items: center;
+  background: linear-gradient(120deg,#f7e1ec 45%, #e1f3fa 95%);
+}
+.register-card {
+  width: 350px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 7px 24px #fde0ec,0 1.5px 8px #daf2f3;
+  padding: 2.3rem 2.1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.register-title {
+  font-size: 1.35rem;
+  color: #e06ca0;
+  font-weight: bold;
+  margin-bottom: 1.4rem;
+  text-align: center;
+  font-family: var(--primary-font);
+}
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.18rem;
+  width: 100%;
+}
+.register-label {
+  color: #617;
+  font-size: 1.01rem;
+  font-family: var(--primary-font);
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+}
+.register-input {
+  margin-top: 0.27em;
+  padding: 0.7em;
+  border-radius: 8px;
+  border: 1px solid var(--template-border-color);
+  background: var(--product-bg);
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+.register-input:focus {
+  border-color: #e06ca0;
+  background: #fff6fa;
+}
+.register-btn {
+  background: linear-gradient(90deg, #e06ca0 60%, #edbad6 100%);
+  color: #fff;
+  font-size: 1.07rem;
+  font-weight: 700;
+  padding: 0.7em 0;
+  border-radius: 8px;
+  border: none;
+  margin-top: 0.3em;
+  width: 100%;
+  box-shadow: 0 2px 7px #ffdbe8;
+  cursor: pointer;
+  transition: background .15s;
+  font-family: var(--primary-font);
+}
+.register-btn:hover {
+  background: linear-gradient(90deg, #edbad6 20%, #e06ca0 80%);
+}
+
+.register-back-btn {
+  background: #fff6fa;
+  color: #e06ca0;
+  border: 1px solid #ffdbe8;
+  border-radius: 7px;
+  font-size: 0.97rem;
+  margin-top: 1.5em;
+  padding: 0.52em 2.7em;
+  cursor: pointer;
+  font-family: var(--primary-font);
+  transition: background 0.13s, color 0.13s;
+}
+.register-back-btn:hover {
+  background: #fee4f1;
+  color: #c0598f;
+}
+.register-error {
+  min-height: 1.1em;
+  color:#e13250;
+  font-size: 0.97em;
+  margin: 0.69em 0 0 0;
+  font-family: var(--primary-font);
+  text-align: center;
+  font-weight: 500;
+}
+@media (max-width: 420px) {
+  .register-card {
+    width: 90vw;
+    padding: 1.1rem 0.5rem 1.1rem;
+  }
+}
+
+
+/* ========== product_detail.html用 =========== */
+#content {
+  max-width: 440px;
+  margin: 40px auto 32px auto;
+  background: var(--item-bg);
+  border-radius: 18px;
+  box-shadow: 0 4px 26px #ffdbe8, 0 1.5px 10px rgba(60,70,100,0.07);
+  padding: 34px 36px 30px 36px;
+  text-align: center;
+  position: relative;
+}
+
+@media (max-width: 520px) {
+  #content { 
+    max-width: 96vw;
+    padding: 14vw 4vw 7vw 4vw;
+  }
+  body {
+    padding: 12px;
+  }
+}
+
+.detail-img {
+  width: 260px;
+  height: 260px;
+  object-fit: cover;
+  border-radius: 20px;
+  background: var(--secondary-bg);
+  margin: 0 auto 18px auto;
+  border: 3.5px solid #ffe2ef;
+  box-shadow: 0 4px 24px #fdd1de;
+  display: block;
+}
+
+#content h2 {
+  color: #e06ca0;
+  font-size: 1.5rem;
+  letter-spacing: 0.04em;
+  margin: 16px 0 10px 0;
+  text-align: center;
+  font-family: var(--primary-font);
+}
+
+#content .price {
+  color: #e06ca0;
+  font-size: 1.25rem;
+  background: #fff6fa;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  border-radius: 12px;
+  padding: 8px 22px;
+  margin-bottom: 20px;
+  display: inline-block;
+  box-shadow: 0 1.5px 4px #fde2fa;
+}
+
+#content .detail {
+  color: #555;
+  font-size: 1.08rem;
+  padding: 1.2em 0 1.5em 0;
+  line-height: 1.7;
+  text-align: left;
+  border-bottom: 1px dashed #ffdbe8;
+  margin-bottom: 22px;
+  white-space: pre-line;
+  min-height: 48px;
+}
+
+#buyBtn {
+  background: linear-gradient(90deg, #e06ca0 70%, #edbad6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.08rem;
+  font-weight: bold;
+  padding: 12px 44px;
+  margin: 14px auto 0 auto;
+  cursor: pointer;
+  box-shadow: 0 2px 12px #ffdbe8;
+  transition: background .16s, opacity .13s;
+  display: inline-block;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+
+#buyBtn[disabled], #buyBtn:disabled, #buyBtn[style*="background:#888;"] {
+  background: #cacaca !important;
+  color: #fff;
+  opacity: 0.85;
+  cursor: not-allowed;
+  box-shadow: 0 0 0 #000;
+}
+
+button[onclick*="product_list.html"] {
+  display: block;
+  margin: 24px auto 0 auto;
+  background: #fff6fa;
+  color: #e06ca0;
+  border: 1.7px solid #ffcef0;
+  border-radius: 9px;
+  font-size: 1.07rem;
+  padding: 8px 32px;
+  font-family: var(--primary-font);
+  font-weight: 500;
+  box-shadow: 0 1.5px 8px #fde3fa;
+  cursor: pointer;
+  transition: background 0.15s, color 0.13s, border 0.13s;
+}
+button[onclick*="product_list.html"]:hover {
+  background: #ffe1f3;
+  color: #c05397;
+  border: 1.7px solid #f7b7d8;
+}
+
+/* ========== add_product.html用 ========== */
+.add-product-container {
+  max-width: 480px;
+  margin: 42px auto 32px auto;
+  background: var(--item-bg);
+  border-radius: 20px;
+  box-shadow: 0 11px 36px #ffdbe8, 0 1.5px 10px rgba(60,70,100,0.11);
+  padding: 44px 40px 32px 40px;
+  text-align: center;
+  position: relative;
+}
+@media (max-width: 600px) {
+  .add-product-container {
+    max-width: 98vw;
+    padding: 7vw 3vw 5vw 3vw;
+  }
+}
+
+#productForm label {
+  display: block;
+  text-align: left;
+  color: #c67aa7;
+  font-size: 1.07rem;
+  font-weight: 500;
+  margin: 22px 0 7px 0;
+  letter-spacing: 0.015em;
+}
+#productForm input[type="file"],
+#productForm input[type="number"],
+#productForm input[type="text"],
+#productForm textarea {
+  width: 100%;
+  font-family: var(--primary-font);
+  font-size: 1.09rem;
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 13px;
+  border-radius: 12px;
+  border: 1.5px solid #efd5ec;
+  background: #fff6fa;
+  padding: 9px 11px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border 0.19s;
+}
+#productForm input[type="file"]:focus,
+#productForm input[type="number"]:focus,
+#productForm input[type="text"]:focus,
+#productForm textarea:focus {
+  border: 1.7px solid #ea8cbd;
+  background: #fff;
+}
+#productForm input[readonly] {
+  background: #eef !important;
+  color: #888;
+}
+#previewProductImg, #previewBarcodeImg {
+  border: 2.2px solid #ffe2ef;
+  border-radius: 13px;
+  box-shadow: 0 4px 18px #fde1e9;
+  margin-top: 6px;
+}
+#barcode_section {
+  margin-bottom: 13px;
+  background: #faf6fc;
+  border-radius: 12px;
+  padding: 16px 12px 10px 12px;
+  box-shadow: 0 1.7px 6px #f8d9e9;
+}
+#readBarcodeBtn, #noBarcodeBtn, #submitBtn  {
+  padding: 0.75em 2em;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #e06ca0 65%, #edbad5 100%);
+  color: #fff;
+  font-size: 1.09rem;
+  font-weight: bold;
+  margin: 11px 9px 11px 9px;
+  letter-spacing: 0.015em;
+  box-shadow: 0 2px 11px #ffdbe8;
+  cursor: pointer;
+  transition: background .16s, opacity .10s;
+}
+#readBarcodeBtn:hover, #submitBtn:hover {
+  background: linear-gradient(90deg, #edbad6 20%, #e06ca0 80%);
+}
+#noBarcodeBtn {
+  background: #fff6fa;
+  color: #a85b96;
+  font-weight: 600;
+  border: 1.5px solid #ecd1de;
+  box-shadow: 0 1.5px 6px #fde2eb;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+#noBarcodeBtn:hover {
+  background: #ffe7f3 !important;
+  color: #c0598f !important;
+  border-color: #edbad6 !important;
+}
+#itemcode_view {
+  color: #68a;
+  font-size: 0.99em;
+  margin-top: 7px;
+  margin-bottom: 7px;
+  display: inline-block;
+  font-weight: 500;
+}
+#limit_price_view {
+  display: inline-block;
+  background: #fff6fa;
+  color: #c84;
+  font-size: 0.96em;
+  border-radius: 6px;
+  padding: 4px 10px;
+  margin-left: 10px;
+}
+#listing-remain-view {
+  display: block;
+  background: #ffe9ed;
+  color: #e06ca0;
+  font-weight: bold;
+  border-radius: 8px;
+  font-size: 1.06em;
+  padding: 8px 15px;
+  margin: 17px 0 0 0;
+  text-align: center;
+  box-shadow: 0 1.5px 7px #ffdbe8;
+}
+#msg {
+  color: #da4a8b;
+  font-size: 1.07em;
+  font-weight: bold;
+  margin: 18px 0 7px 0;
+  text-align: center;
+  min-height: 1.5em;
+}
+button[onclick*="product_list.html"] {
+  display: block !important;
+  margin: 30px auto 0 auto !important;
+  background: #fff6fa !important;
+  color: #e06ca0 !important;
+  border: 1.7px solid #ffcef0 !important;
+  border-radius: 9px !important;
+  font-size: 1.08rem !important;
+  padding: 8px 32px !important;
+  font-family: var(--primary-font);
+  font-weight: 500 !important;
+  box-shadow: 0 1.5px 8px #fde3fa;
+  transition: background 0.15s, color 0.13s, border 0.13s;
+}
+button[onclick*="product_list.html"]:hover {
+  background: #ffe1f3 !important;
+  color: #c05397 !important;
+  border: 1.7px solid #f7b7d8 !important;
+}
+
+#backToBarcodeBtn {
+  background: #fff6fa;
+  color: #a85b96;
+  font-weight: 600;
+  border: 1.5px solid #ecd1de;
+  box-shadow: 0 1.5px 6px #fde2eb;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding: 0.75em 2em;
+  border-radius: 10px;
+  font-size: 1.09rem;
+  letter-spacing: 0.015em;
+  cursor: pointer;
+  transition: background .16s, color .10s, border-color .10s;
+  display: inline-block; /* collapse防止 */
+}
+#backToBarcodeBtn:hover {
+  background: #ffe7f3 !important;
+  color: #c0598f !important;
+  border-color: #edbad6 !important;
+}
+
+/* ▼ menu-dots/メニューのアニメーションと装飾 */
+.dropdown-menu {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.22s cubic-bezier(.54,.19,.51,.91), transform 0.22s;
+}
+.dropdown-menu.show {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  animation: dropdownFadeIn 0.22s cubic-bezier(.67,.21,.5,1.04);
+}
+@keyframes dropdownFadeIn {
+  0% { opacity: 0; transform: translateY(-18px) scale(.86);}
+  100% { opacity: 1; transform: translateY(0) scale(1);}
+}
+.dropdown-menu a {
+  font-weight: bold;
+  text-decoration: none !important;
+  color: #7a407c !important;
+  /* 他色で上書き防御 */
+}
+.dropdown-menu a:hover,
+.dropdown-menu a:active,
+.dropdown-menu a:focus {
+  background: #f7e2fa !important;
+  /* 色は変えない */
+  color: #7a407c !important;
+  text-decoration: none !important;
+}
+
+/* ▼ 商品名デザイン：黒の太字、下線や斜線を除去 */
+.itemname {
+  color: #222 !important;
+  font-weight: bold !important;
+  text-decoration: none !important;
+  cursor: pointer;
+}
+.itemname.sold {
+  color: #999 !important;
+  font-weight: bold !important;
+  text-decoration: none !important;
+  cursor: default;
+}
+
+
+/* ---- 商品説明用カード内スクロール・折り返し対応 ---- */
+#content .detail {
+  overflow-y: auto;              /* 縦スクロール可能に */
+  max-height: 180px;             /* カード内で説明欄の最大高さを設定。調節可 */
+  word-break: break-all;         /* 単語の折り返しも許可 */
+  white-space: pre-line;         /* 既存設定（改行も維持） */
+  padding-right: 8px;            /* スクロールバーが出る場合も美しく */
+  scrollbar-width: thin;         /* Firefox用ですが、狭いスクロールバー */
+}
+#content .detail::-webkit-scrollbar {
+  width: 7px;
+  background: #ffeef8;
+  border-radius: 9px;
+}
+#content .detail::-webkit-scrollbar-thumb {
+  background: #f7b7d8;
+  border-radius: 9px;
+}
+
+@media (max-width: 520px) {
+  #content .detail {
+    max-height: 24vw;    /* モバイル時は高さを調節 */
+  }
+}
+
+
+
+/* --- 汎用ヘッダーとロゴ --- */
+.site-header {
+  width: 100vw;
+  min-width: 360px;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: #ffffff;
+  z-index: 10000;
+  box-shadow: 0 2px 12px #ffe9f5;
+  padding: 0 0 2px 0;
+  margin: 0;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1.5px solid #ffdbe8;
+}
+.header-inner {
+  width: 900px;
+  max-width: 96vw;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* 画像ロゴ用に調整 */
+.cute-logo {
+  display: inline-block;
+  /* サイズや余白関連は一旦リセット */
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  text-shadow: none;
+  transition: filter .18s, background .18s;
+  user-select: none;
+  /* 高さ制限、overflow防止 */
+  height: 68px;
+  line-height: 68px;
+  vertical-align: middle;
+}
+
+/* ロゴ画像サイズを指定（高さ優先で横長に収まるように） */
+.cute-logo img {
+  display: block;
+  height: 66px;       /* ヘッダー内でバランスよく表示（上下4px余裕） */
+  width: auto;        /* アスペクト比維持 */
+  max-width: 300px;   /* 本来の幅を超えない */
+  max-height: 150px;  /* ロゴ画像の実サイズを超えない */
+  margin: 0;
+  vertical-align: middle;
+  /* ドロップシャドウなど欲しければ以下をON */
+  /* filter: drop-shadow(0 3px 13px #fde0ea); */
+}
+
+/* ホバーやフォーカス時の明るさ強調 */
+.cute-logo:hover,
+.cute-logo:focus {
+  filter: brightness(1.13) drop-shadow(0 0 14px #ffe1fa);
+  background: none; /* 背景色OFF */
+}
+
+/* メニューアイコンとcontainer位置調整（header高さ分だけ下） */
+.menu-dots {
+  top: 16px !important;
+}
+.container {
+  margin-top: 100px !important;
+}
+@media (max-width: 920px) {
+  .header-inner { width: 99vw; }
+}
+
+/* --- ページネーション --- */
+.pagination {
+  text-align: center;
+  margin: 36px 0 10px 0;
+  user-select: none;
+}
+.pagination-btn {
+  background: #fff;
+  border: 1.5px solid #e06ca0;
+  color: #e06ca0;
+  font-weight: bold;
+  font-family: var(--primary-font);
+  font-size: 1.05em;
+  border-radius: 7px;
+  padding: 5px 13px;
+  margin: 0 3px;
+  cursor: pointer;
+  min-width: 32px;
+  min-height: 32px;
+  box-shadow: 0 1.3px 7px #ffdbe8;
+  transition: background .13s, color .13s;
+  vertical-align:middle;
+}
+.pagination-btn.selected,
+.pagination-btn:hover,
+.pagination-btn:active {
+  background: #e06ca0;
+  color: #fff;
+  border-color: #e06ca0;
+}
+.pagination-ellipsis {
+  display: inline-block;
+  min-width: 14px;
+  margin: 0 4px;
+  color: #b687a3;
+  font-weight: bold;
+  font-size: 1.11em;
+  letter-spacing: 2px;
+}
+/* 他のstyle.css部分はご質問本文のもの(既存)を追加で同時利用 */
+
+
+/* ログイン時のみ画面全体がフェードアウト＋グラデーション */
+/* .login-fadeout {
+  pointer-events: none;
+  animation: loginfadeoutbg 0.65s cubic-bezier(.5,0,.5,1) forwards;
+}
+.login-fade-overlay {
+  position: fixed;
+  top:0; left:0; width:100vw; height:100vh;
+  z-index: 99999;
+  background: linear-gradient(120deg, #ffe4ec 0%, #e6e8fc 100%);
+  opacity: 0;
+  pointer-events: none;
+  animation: loginfadeoverlay 0.55s 0.05s cubic-bezier(.6,.14,.38,1) forwards;
+  display: none;
+}
+@keyframes loginfadeoutbg {
+  0% { opacity:1; }
+  60% { opacity:1; }
+  100% { opacity:0; }
+}
+@keyframes loginfadeoverlay {
+  0% { opacity: 0; }
+  35% { opacity: 0.6; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+} */
+
+
+
+/* ===== chat_list.html用:  ===== */
+
+/* タイトル */
+.cr-title {
+  font-size: 1.2rem;
+  color: #e06ca0;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
+  letter-spacing: 0.02em;
+  font-family: var(--primary-font);
+}
+
+/* 2列グリッド */
+.cr-room-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 28px 28px;
+  margin: 0 auto 38px auto;
+  max-width: 860px;
+  padding: 0 1rem;
+}
+
+/* カードデザイン */
+.cr-room-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 18px 0 rgba(40,56,100,0.07);
+  padding: 18px 20px;
+  transition: box-shadow 0.18s, background 0.18s;
+  cursor: pointer;
+  position: relative;
+  min-height: 116px;
+}
+.cr-room-card:hover { box-shadow: 0 5px 24px 0 rgba(36,60,180,0.13); background: #f5f8fe; }
+
+.cr-inactive {
+  background: #f2f2f2;
+  opacity: 0.85;
+  cursor: default;
+  box-shadow: none;
+}
+.cr-inactive:hover { background: #f2f2f2; }
+
+.cr-card-img-wrap {
+  flex-shrink: 0;
+  margin-right: 18px;
+}
+
+.cr-card-img {
+  width: 74px; height: 74px;
+  border-radius: 7px;
+  object-fit: cover;
+  background: #eee;
+  border: 1.7px solid #e5e7f0;
+  box-shadow: 0 1px 4px 0 rgba(80,90,140,0.03);
+}
+
+.cr-card-main {
+  flex-grow: 1; display: flex; flex-direction: column; justify-content: center;
+  min-width: 0;
+}
+
+.cr-card-itemname {
+  font-weight: bold;
+  font-size: 1.13em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+  color: #234;
+}
+
+.cr-card-price {
+  font-size: 1em;
+  color: #4268cc;
+  margin-bottom: 4px;
+}
+
+.cr-card-user {
+  font-size: 1em;
+  color: #24447a;
+  margin-bottom: 0;
+}
+
+/* チャット可ボタン・不可表示 */
+.cr-card-action {
+  flex-shrink: 0;
+  margin-left: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.cr-chat-btn {
+  background: linear-gradient(90deg,#446cf9 80%,#2959cf 100%);
+  color: #fff;
+  border: none;
+  padding: 11px 26px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1em;
+  box-shadow: 0 2px 7px 0 rgba(60,140,220,0.10);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.cr-chat-btn:hover { background: linear-gradient(60deg,#2959cf 60%,#446cf9 100%); }
+
+.cr-chat-unavailable {
+  background: #e0e0e0;
+  color: #a60026;
+  font-size: 0.98em;
+  font-weight: bold;
+  border-radius: 5px;
+  padding: 8px 18px;
+  letter-spacing: 0.06em;
+  box-shadow: 0 2px 5px 0 rgba(140,32,60,0.06);
+}
+
+/* 待機テキスト強調 */
+.cr-waiting-text {
+  color: #e53935;  /* 赤色 */
+  font-size: 0.97em;
+  font-weight: bold;
+  margin-left: 5px;
+  background: none !important;
+  border: none !important;
+  padding: 0;
+  border-radius: 0;
+  letter-spacing: 0.03em;
+}
+
+/* チャット不可ボックス内テキストも太め */
+.cr-card-action .cr-chat-unavailable{
+  color: #fff !important;
+  background: #eb5353;
+}
+
+.cr-no-chat-msg {
+  color: #da243e;
+  background: #ffeeee;
+  text-align: center;
+  font-size: 1.05em;
+  margin: 38px auto 36px auto;
+  padding: 20px 10px;
+  border-radius: 8px;
+  max-width: 430px;
+  letter-spacing: 0.08em;
+  font-weight: bold;
+  box-shadow: 0 1px 10px 0 rgba(204,58,58,0.09);
+}
+
+/* 戻るボタン部分 */
+.cr-btn-area {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+#listing-remain-view {
+  display: block;
+  background: #fff8f0;
+  color: #a26914;
+  font-weight: bold;
+  border-radius: 12px;
+  font-size: 1.23em;
+  letter-spacing: 0.02em;
+  padding: 15px 15px 15px 44px;
+  margin: 34px 0 18px 0;
+  text-align: left;
+  position: relative;
+  box-shadow: 0 4px 18px #ffd5a1;
+  border: 2px solid #ffd5a1;
+  transition: background 0.12s, color 0.12s, border 0.12s;
+  white-space: pre-line; /* 複数行も表示 */
+}
+#listing-remain-view.limit-warning {
+  background: #fff2f2;
+  color: #d22f2f;
+  border-color: #ffb4c6;
+  box-shadow: 0 4px 18px #ffd1d1;
+}
+#listing-remain-view::before {
+  content: "⚠️";
+  position: absolute;
+  left: 15px;
+  top: 14px;
+  font-size: 1.23em;
+}
+
+.purchase-complete-wrapper {
+    max-width: 440px;
+    margin: 110px auto 50px auto;
+    background: var(--item-bg, #fff);   /* 変数未定義なら#fff */
+    border-radius: 22px;
+    box-shadow: var(--box-shadow-default, 0 6px 18px #ffe3ee);
+    padding: 40px 30px 32px 30px;
+    text-align: center;
+}
+
+.purchase-complete-wrapper h2 {
+    color: #e06ca0;
+    font-size: 1.55rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 32px;
+}
+
+.purchase-info-card {
+    background: #fff6fa;
+    border: 1.6px solid #f7b7d8;
+    border-radius: 14px;
+    padding: 22px 0 15px 0;
+    margin-bottom: 34px;
+    margin-top: 8px;
+    box-shadow: 0 2px 12px #ffdbe8;
+}
+
+.sub-label {
+    color: #b26ca0;
+    font-size: 1.13rem;
+    margin-bottom: 3px;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+}
+
+.main-amount {
+    font-size: 2.5rem;
+    color: #e06ca0;
+    font-weight: bold;
+    letter-spacing: 0.07em;
+    margin-top: 8px;
+}
+
+.main-amount-unit {
+    font-size: 1.2rem;
+    color: #e06ca0;
+    font-weight: bold;
+    margin-left: 0.2em;
+}
+
+.back-to-list-btn {
+    width: 90%;
+    margin: 18px 0 16px 0;
+    padding: 14px 0;
+    border-radius: 19px;
+    border: 2px solid #f8acd5;
+    background: #fff;
+    color: #e06ca0;
+    font-size: 1.15rem;
+    font-weight: bold;
+    box-shadow: 0 2px 10px #ffdbe8;
+    font-family: var(--primary-font, "Meiryo", sans-serif);
+    cursor: pointer;
+    transition: background 0.15s, color 0.13s, border 0.13s;
+}
+.back-to-list-btn:hover {
+    background: #ffe1f3;
+    color: #c05397;
+    border-color: #f7b7d8;
+}
+
+.open-chat-btn {
+    width: 90%;
+    margin: 4px auto 0 auto;
+    padding: 14px 0;
+    border-radius: 19px;
+    border: 2px solid #f8acd5;
+    background: linear-gradient(90deg, #e06ca0 70%, #edbad6 100%);
+    color: #fff;
+    font-size: 1.14rem;
+    font-weight: bold;
+    box-shadow: 0 1.5px 7px #ffdbe8;
+    font-family: var(--primary-font, "Meiryo", sans-serif);
+    cursor: pointer;
+    transition: background 0.15s, color 0.13s, border 0.13s;
+    letter-spacing: 0.03em;
+    display: block;
+}
+.open-chat-btn:hover {
+    background: linear-gradient(90deg, #edbad6 20%, #e06ca0 80%);
+    color: #fff;
+    border-color: #e06ca0;
+}
+
+@media (max-width: 640px) {
+    .purchase-complete-wrapper { max-width: 97vw; padding: 7vw 2vw; }
+    .back-to-list-btn, .open-chat-btn { width: 99%; font-size: 1rem; }
+}
+
+
+/* ===================== */
+/*  chat.html専用スタイル */
+/* ===================== */
+.chatpage-root {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background: #fffafd;
+    padding: 68px 0 0 0;
+}
+
+/* 商品情報部分 */
+.chatpage-productinfo {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 15px 15px 0 0;
+    box-shadow: 0 4px 14px #ffe6f0;
+    border: 1.7px solid #f7b7d8;
+    display: flex;
+    gap: 1.15em;
+    align-items: center;
+    padding: 13px 18px;
+    margin-bottom: 0;
+}
+.chatpage-productimg {
+    width: 62px;
+    height: 62px;
+    border-radius: 14px;
+    object-fit: cover;
+    box-shadow: 0 2px 7px #ffdbe8;
+    border: 2px solid #ffe2ef;
+    background: #eee;
+}
+.chatpage-productmeta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.chatpage-productname {
+    font-size: 1.04em;
+    font-weight: bold;
+    color: #d05690;
+    margin-bottom: 5px;
+    letter-spacing: 0.03em;
+    max-width: 300px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.chatpage-productprice {
+    color: #a77;
+    font-size: 1.02em;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+.chatpage-productid {
+    color: #bb82b3;
+    font-size: 0.99em;
+}
+
+/* 相手ユーザー欄 */
+.chatpage-counteruser {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 0 0.5em 0;
+    padding: 7px 18px 2px 18px;
+    font-size: 1.09em;
+    font-weight: 500;
+    text-align: left;
+    color: #ac3b79;
+    background: transparent;
+    letter-spacing: 0.04em;
+    display: flex;
+    justify-content: flex-start;
+}
+.chatpage-counteruser .role {
+    color: #9c5ca3;
+    background: #fff6fa;
+    border-radius: 6px;
+    padding: 0 7px;
+    margin-right: 3px;
+    font-weight: bold;
+}
+
+.chatpage-chatbox {
+    border: 1.7px solid #f7b7d8;
+    border-radius: 0 0 16px 16px;
+    width: 100%;
+    max-width: 520px;
+    height: 350px;
+    overflow-y: auto;
+    background: #fcf1fa;
+    padding: 15px 13px;
+    margin: 0 0 10px 0;
+    box-shadow: 0 3px 14px #ffe6f0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* チャットメッセージ(受信) */
+.chatpage-chatmsg {
+    max-width: 78%;
+    margin-bottom: 8px;
+    padding: 11px 18px 7px 14px;
+    border-radius: 16px 18px 18px 4px;
+    word-break: break-word;
+    font-size: 1.04em;
+    background: #fff;
+    color: #c04995;
+    box-shadow: 0 1.3px 4px #ffdbe8;
+    display: inline-block;
+    align-self: flex-start;
+    position: relative;
+    border: 1px solid #f7b7d8;
+}
+
+/* チャット自分（送信） */
+.chatpage-chatmsg.me {
+    background: #f7f7f7;
+    color: #8a247e;
+    align-self: flex-end;
+    border-radius: 16px 12px 4px 18px;
+    box-shadow: 0 1.2px 4px #e8c6df;
+    border: 1px solid #e8c6df;
+}
+
+/* 発言者、時刻 */
+.chatpage-chatmeta {
+    font-size: 0.83em;
+    color: #b687a3;
+    margin-bottom: 2px;
+    display: block;
+}
+
+/* 入力欄行 */
+.chatpage-chatinputarea {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    width: 100%;
+    max-width: 520px;
+}
+.chatpage-chatinput {
+    flex: 1 1 220px;
+    font-size: 1em;
+    padding: 7px 10px;
+    border-radius: 10px;
+    border: 1.2px solid #efd5ec;
+}
+.chatpage-chatinput:focus {
+    border: 1.6px solid #edbad6;
+}
+
+/* 送信ボタン */
+.chatpage-chatsend {
+    border: none;
+    padding: 8px 23px;
+    border-radius: 9px;
+    background: linear-gradient(90deg, #e06ca0 76%, #edbad6 100%);
+    color: #fff;
+    font-size: 1.08em;
+    font-weight: bold;
+    box-shadow: 0 1.5px 7px #ffdbe8;
+    cursor: pointer;
+    letter-spacing: 1px;
+    margin-left: 4px;
+    transition: background .17s;
+}
+.chatpage-chatsend:hover {
+    background: linear-gradient(90deg, #edbad6 30%, #e06ca0 100%);
+}
+
+/* ボタン部分 */
+.chatpage-btnarea {
+    display: flex;
+    gap: 18px;
+    margin-top: 18px;
+    justify-content: center;
+    align-items: center;
+}
+.chatpage-btnarea button {
+    min-width: 180px;
+    height: 42px;
+    font-size: 1.08em;
+    font-family: var(--primary-font);
+    padding: 0 18px;
+    font-weight: 500;
+    box-sizing: border-box;
+    background: #fff6fa;
+    color: #e06ca0;
+    border: 1.5px solid #ffdbe8;
+    border-radius: 10px;
+    box-shadow: 0 1.3px 6px #fedbeb;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s, border 0.12s;
+}
+.chatpage-btnarea button:hover {
+    background: #ffe1f3;
+    color: #c05397;
+    border: 1.5px solid #f7b7d8;
+}
+
+
+
+
+@media (max-width: 900px) {
+  .container { width: 98vw; min-width: unset; }
+  .header-inner { width: 98vw; }
+}
+@media (max-width: 850px) {
+  .products { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .products { grid-template-columns: 1fr; }
+  .container { width: 100vw; padding: 5vw 2vw; min-width: unset; }
+  .item { width: 95vw; min-width: unset; }
+}
+
+
+
+
+
+
+#logo-splash {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw; height: 100vh;
+  z-index: 99999;
+  background: linear-gradient(111deg, #fff 70%, #f8acd5 120%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#logo-splash .char {
+  opacity: 0;
+  font-size: 3rem;
+  font-weight: bold;
+  color: #e06ca0;
+  display: inline-block;
+  margin: 0 0.18em;
+  transform: translateY(50px) scale(0.97);
+  animation: char-appear 0.55s cubic-bezier(.26,.67,.45,1.1) forwards;
+}
+
+@keyframes char-appear {
+  from { opacity: 0; transform: translateY(50px) scale(0.97);}
+  to   { opacity: 1; transform: translateY(0) scale(1.11);}
+}
+
+/* 1文字ずつ遅延 */
+#logo-splash .char:nth-child(1) { animation-delay: 0.05s;}
+#logo-splash .char:nth-child(2) { animation-delay: 0.22s;}
+#logo-splash .char:nth-child(3) { animation-delay: 0.38s;}
+#logo-splash .char:nth-child(4) { animation-delay: 0.55s;}
+#logo-splash .char:nth-child(5) { animation-delay: 0.72s;}

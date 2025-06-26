@@ -29,6 +29,17 @@
       <img src="logo.png" alt="転売イヤーのロゴ">
     </a>
   </div>
+  <!-- メニュー -->
+    <div class="menu-dots" onclick="toggleMenu()">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+    </div>
+    <div id="dropdown" class="dropdown-menu">
+        <a href="add_product.html">商品を出品</a>
+        <a href="chat_list.html">チャット</a>
+        <a href="login.html" onclick="localStorage.removeItem('userid')">ログアウト</a>
+    </div>
 </header>
 <div class="purchase-complete-wrapper">
     <h2>購入が完了しました！</h2>
@@ -49,6 +60,24 @@
         alert("ログインユーザー情報がありません。再ログインしてください。");
         location.href = "login.html";
     }
+
+    function toggleMenu(){
+        const menu = document.getElementById('dropdown');
+        const btn = document.querySelector('.menu-dots');
+        // メニューを出す座標を取得
+        const rect = btn.getBoundingClientRect();
+
+        if (!menu.classList.contains('show')) {
+            menu.style.left = rect.right - 150 + "px";
+            menu.style.top  = rect.bottom + 6 + "px";
+            menu.classList.add('show');
+            document.addEventListener('mousedown', closeMenuWhenOutside);
+        } else {
+            menu.classList.remove('show');
+            document.removeEventListener('mousedown', closeMenuWhenOutside);
+        }
+    }
+    
     const params = new URLSearchParams(location.search);
     const price = params.get('price');
     const itemid = params.get('itemid');  // URLにitemid必須

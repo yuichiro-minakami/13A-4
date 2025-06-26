@@ -7,6 +7,42 @@
   <meta name="viewport" content="width=400,initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
   <style>
+    /* スプラッシュ演出：1文字ずつふわっと登場 */
+#logo-splash {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw; height: 100vh;
+  z-index: 99999;
+  background: linear-gradient(111deg, #fff 70%, #f8acd5 120%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#logo-splash .char {
+  opacity: 0;
+  font-size: 3rem;
+  font-weight: bold;
+  color: #e06ca0;
+  display: inline-block;
+  margin: 0 0.18em;
+  transform: translateY(50px) scale(0.97);
+  /* 文字の出現アニメーションを適用 */
+  animation: char-appear 0.55s cubic-bezier(.26,.67,.45,1.1) forwards;
+}
+
+/* 文字ずつ遅らせてアニメーション */
+#logo-splash .char:nth-child(1) { animation-delay: 0.05s;}
+#logo-splash .char:nth-child(2) { animation-delay: 0.22s;}
+#logo-splash .char:nth-child(3) { animation-delay: 0.38s;}
+#logo-splash .char:nth-child(4) { animation-delay: 0.55s;}
+#logo-splash .char:nth-child(5) { animation-delay: 0.72s;}
+
+@keyframes char-appear {
+  from { opacity: 0; transform: translateY(50px) scale(0.97);}
+  to   { opacity: 1; transform: translateY(0) scale(1.11);}
+}
   /* 背景アニメーション（単一色風のグラデーションアニメ） */
   body {
     background: linear-gradient(120deg, #ffe4ec 0%, #e6e8fc 100%);
@@ -88,6 +124,13 @@
   </style>
 </head>
 <body>
+  <div id="logo-splash" style="display:none;">
+    <span class="char">転</span>
+    <span class="char">売</span>
+    <span class="char">イ</span>
+    <span class="char">ヤ</span>
+    <span class="char">ー</span>
+  </div>
   <div class="login-center-wrapper">
     <div class="login-card">
       <div class="login-app-header">
@@ -135,16 +178,40 @@
           return;
         }
         // ↓↓↓↓↓ 以下、アニメーション追加部分 ↓↓↓↓↓
-        document.body.classList.add("login-fadeout");
-        var overlay = document.getElementById("loginFadeOverlay");
-        overlay.style.display = "block";
-        setTimeout(function(){
-          location.href = "product_list.html";
-        }, 680);
+        // document.body.classList.add("login-fadeout");
+        // var overlay = document.getElementById("loginFadeOverlay");
+        // overlay.style.display = "block";
+        showSplashThenMain();
+          setTimeout(() => {
+          location.href = "product_list.html"
+        }, 2200);
+// ↑スプラッシュ＋フェード分の秒数合わせて
         // ↑↑↑↑↑ アニメーション追加部分ここまで ↑↑↑↑↑
       } else {
         document.getElementById("loginError").innerText = data.message || "ログインに失敗しました";
       }
     }
+    function showSplashThenMain() {
+    document.getElementById("logo-splash").style.display = "flex";
+    document.body.style.overflow = "hidden";
+    // 兄弟要素だけ隠す（子要素はhiddenにならない）
+    Array.from(document.body.children).forEach(el => {
+      if (el.id !== "logo-splash") {
+        el.style.visibility = "hidden";
+      }
+    });
+
+    setTimeout(() => {
+      document.getElementById("logo-splash").style.transition = "opacity 0.5s";
+      document.getElementById("logo-splash").style.opacity = 0;
+      setTimeout(() => {
+        document.getElementById("logo-splash").remove();
+        Array.from(document.body.children).forEach(el => {
+          if (el.style) el.style.visibility = "";
+        });
+        document.body.style.overflow = "";
+      }, 500);
+    }, 1700);
+  }
   </script>
 </body

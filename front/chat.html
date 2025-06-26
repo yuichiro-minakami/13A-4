@@ -4,161 +4,118 @@
     <meta charset="UTF-8">
     <title>チャット</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="icon.png" type="image/png">
     <style>
-
-        body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-height: 100vh;
-        background: #fffafd;
-        }
-        .chat-box {
-        border: 1.7px solid var(--chat-border);
-        border-radius: 16px;
-        width: 100%;
-        max-width: 520px;
-        height: 350px;
-        overflow-y: auto;
-        background: #fff6fa;
-        padding: 14px 11px;
-        margin: 20px 0;
-        box-shadow: 0 3px 14px #ffe6f0;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        }
-
-        .chat-msg {
-        max-width: 78%;
-        margin-bottom: 8px;
-        padding: 11px 17px 7px 14px;
-        border-radius: 16px 18px 18px 4px;
-        position: relative;
-        word-break: break-word;
-        font-size: 1.04em;
-        background: var(--chat-recv-bg);
-        color: var(--chat-recv-text);
-        box-shadow: 0 1.3px 4px #ffdbe8;
-        display: inline-block;
-        align-self: flex-start;
-        }
-
-        .chat-msg.me {
-        background: var(--chat-sent-bg);
-        color: var(--chat-sent-text);
-        align-self: flex-end;
-        border-radius: 16px 12px 4px 18px;
-        box-shadow: 0 1.2px 4px #e8c6df;
-        }
-
-        .chat-meta {
-        font-size: 0.83em;
-        color: #b687a3;
-        margin-bottom: 2px;
-        display: block;
-        }
-
-        /* 入力欄装飾 */
-        .chat-input-area {
-        display: flex;
-        gap: 6px;
-        margin-top: 6px;
-        }
-        #chatInput {
-        flex: none;
-        width: 220px;
-        font-size: 1em;
-        padding: 7px 10px;
-        border-radius: 10px;
-        }
-        #chatInput:focus {
-        border: 1.6px solid #edbad6;
-        }
-
-        /* 送信ボタンも可愛く */
-        #chatSend {
-        border: none;
-        padding: 8px 23px;
-        border-radius: 9px;
-        background: linear-gradient(90deg, #e06ca0 76%, #edbad6 100%);
-        color: #fff;
-        font-size: 1.08em;
-        font-weight: bold;
-        box-shadow: 0 1.5px 7px #ffdbe8;
-        cursor: pointer;
-        letter-spacing: 1px;
-        margin-left: 4px;
-        transition: background .17s;
-        }
-
-        #chatSend:hover {
-        background: linear-gradient(90deg, #edbad6 30%, #e06ca0 100%);
-        }
-
-        /* その他ボタンもピンク系 */
-        button[onclick*="chat_list.html"], button[onclick*="purchase.html"] {
-        margin-right: 12px;
-        background: #fff6fa;
-        color: #e06ca0;
-        border: 1.5px solid #ffdbe8;
-        border-radius: 10px;
-        font-size: 1.04em;
-        padding: 7px 22px;
-        box-shadow: 0 1.3px 6px #fedbeb;
-        cursor: pointer;
-        transition: background 0.12s, color 0.12s, border 0.12s;
-        }
-        button[onclick*="chat_list.html"]:hover, button[onclick*="purchase.html"]:hover {
-        background: #ffe1f3;
-        color: #c05397;
-        border: 1.5px solid #f7b7d8;
-        }
-        .button-area {
-        display: flex;
-        gap: 18px;
-        margin-top: 18px;
-        justify-content: center;
-        align-items: center;
-        }
-        .button-area button {
-        min-width: 180px;
-        height: 42px;
-        font-size: 1.08em;
-        font-family: var(--primary-font);
-        padding: 0 18px;
-        font-weight: 500;
-        box-sizing: border-box;
-        }
-
+    body {padding-top: 68px; /* headerの高さと揃える */}
     </style>
 </head>
-<body>
-    <h2>出品者とのチャット</h2>
-    <div id="productInfo"></div>
-    <div class="chat-box" id="chatBox"></div>
-    <div class="chat-input-area">
-        <input type="text" id="chatInput" maxlength="200" placeholder="メッセージを入力…" style="flex:1;">
-        <button id="chatSend">送信</button>
+<body class="chatpage-root">
+    <!-- ▼ ヘッダー -->
+    <header class="site-header">
+    <div class="header-inner">
+        <a href="product_list.html" class="cute-logo">
+        <img src="logo.png" alt="転売イヤーのロゴ">
+        </a>
     </div>
-<div class="button-area">
-    <button onclick="location.href='chat_list.html'">チャットリスト一覧</button>
-</div>    <script>
-        // ユーザー認証（localStorageにuserid）
+    <!-- メニュー -->
+    <div class="menu-dots" onclick="toggleMenu()">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+    </div>
+    <div id="dropdown" class="dropdown-menu">
+        <a href="add_product.html">商品を出品</a>
+        <a href="chat_list.html">チャット</a>
+        <a href="login.html" onclick="localStorage.removeItem('userid')">ログアウト</a>
+    </div>
+    </header>
+    <h2>チャット</h2>
+    <!-- 商品情報 -->
+    <div id="productInfo" class="chatpage-productinfo" style="display:none;"></div>
+    <!-- チャット相手情報 -->
+    <div id="counterUserInfo" class="chatpage-counteruser" style="display:none;"></div>
+    <!-- チャット本体 -->
+    <div class="chatpage-chatbox" id="chatBox"></div>
+    <!-- 入力行 -->
+    <div class="chatpage-chatinputarea">
+        <input type="text" id="chatInput" class="chatpage-chatinput" maxlength="200" placeholder="メッセージを入力…">
+        <button id="chatSend" class="chatpage-chatsend">送信</button>
+    </div>
+    <div class="chatpage-btnarea">
+        <button onclick="location.href='chat_list.html'">チャットリスト一覧</button>
+    </div>
+    <script>
+        // ユーザー認証
         const userid = localStorage.getItem("userid");
         if (!userid) {
             alert("ログインユーザー情報がありません。再ログインしてください。");
             location.href = "login.html";
         }
-        // クエリからitemid, price取得
+
+        function toggleMenu(){
+            const menu = document.getElementById('dropdown');
+            const btn = document.querySelector('.menu-dots');
+            // メニューを出す座標を取得
+            const rect = btn.getBoundingClientRect();
+
+            if (!menu.classList.contains('show')) {
+                menu.style.left = rect.right - 150 + "px";
+                menu.style.top  = rect.bottom + 6 + "px";
+                menu.classList.add('show');
+                document.addEventListener('mousedown', closeMenuWhenOutside);
+            } else {
+                menu.classList.remove('show');
+                document.removeEventListener('mousedown', closeMenuWhenOutside);
+            }
+        }
+
+        // itemid取得
         const params = new URLSearchParams(location.search);
         const itemid = params.get('itemid');
-        const price = params.get('price');
-        // 商品情報簡易表示
-        document.getElementById('productInfo').textContent = `商品番号: ${itemid}　価格: ${price ? Number(price).toLocaleString()+'円' : ""}`;
 
+        // 商品/相手ユーザー情報表示
+        async function setProductInfoAndUser() {
+            // 商品
+            const res = await fetch('https://j05jrkijv7.execute-api.ap-southeast-2.amazonaws.com/hackProduct?itemid=' + itemid);
+            const product = await res.json(); 
+            const el = document.getElementById('productInfo');
+            const imgurl = product.image_url || 'noimage.png';
+            const itemname = product.itemname || '';
+            const price = (product.price != null ? Number(product.price).toLocaleString() + '円' : '');
+            el.innerHTML = `
+                <img src="${imgurl}" class="chatpage-productimg" alt="商品画像">
+                <div class="chatpage-productmeta">
+                    <span class="chatpage-productname">${itemname}</span>
+                    <span class="chatpage-productprice">${price}</span>
+                </div>
+            `;
+            el.style.display = "";
 
-        // チャット取得後に既読化する
+            // 相手ユーザー
+            let myRole = '', otherRole = '', partnerUserid;
+            if (String(userid) === String(product.userid)) {
+                myRole = "出品者"; otherRole = "購入者"; partnerUserid = product.buyerid;
+            } else {
+                myRole = "購入者"; otherRole = "出品者"; partnerUserid = product.userid;
+            }
+            // 名前取得
+            let partnerUsername = "";
+            if (partnerUserid) {
+                try {
+                    const res2 = await fetch('https://wuxh09r0tb.execute-api.ap-southeast-2.amazonaws.com/hackUser?userid='+partnerUserid);
+                    const userData = await res2.json();
+                    partnerUsername = userData.username || ("ID:" + partnerUserid);
+                } catch(e){ partnerUsername = "不明"; }
+            } else {
+                partnerUsername = "-";
+            }
+            document.getElementById('counterUserInfo').innerHTML =
+                `<span class="role">${otherRole}：</span>${partnerUsername}`;
+            document.getElementById('counterUserInfo').style.display = "";
+        }
+        setProductInfoAndUser();
+
+        // 既読化
         async function markAsRead() {
             await fetch('https://adiw2kabp8.execute-api.ap-southeast-2.amazonaws.com/hackChatRead', {
                 method: 'POST',
@@ -169,8 +126,7 @@
                 })
             });
         }
-
-        // チャットロード
+        // チャット取得
         async function loadChat() {
             const res = await fetch('https://zo7y44s5ih.execute-api.ap-southeast-2.amazonaws.com/hackChat?itemid='+itemid);
             const data = await res.json();
@@ -178,16 +134,15 @@
             chatBox.innerHTML = '';
             data.forEach(msg => {
                 const div = document.createElement('div');
-                div.className = 'chat-msg' + (String(msg.senderid) === userid ? ' me' : '');
-                div.innerHTML = `<span class="chat-meta">[${msg.username}] ${msg.created_at || ""}</span><br>${msg.message}`;
+                div.className = 'chatpage-chatmsg' + (String(msg.senderid) === userid ? ' me' : '');
+                div.innerHTML = `<span class="chatpage-chatmeta">[${msg.username}] ${msg.created_at || ""}</span><br>${msg.message}`;
                 chatBox.appendChild(div);
             });
             chatBox.scrollTop = chatBox.scrollHeight;
             await markAsRead();
         }
         loadChat();
-
-        // メッセージ送信
+        // 送信
         document.getElementById('chatSend').onclick = async () => {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
@@ -204,11 +159,7 @@
             input.value = "";
             loadChat();
         };
-
-        // 5秒ごとにチャット再取得
         setInterval(loadChat, 5000);
-
-        // キーで送信
         document.getElementById('chatInput').addEventListener('keydown', function(e){
             if(e.key === 'Enter') document.getElementById('chatSend').click();
         });

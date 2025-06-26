@@ -25,9 +25,29 @@
     .cr-room-card {
         position: relative;
     }
+    body {padding-top: 68px; /* headerの高さと揃える */}
     </style>
+    <link rel="icon" href="icon.png" type="image/png">
 </head>
 <body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="product_list.html" class="cute-logo">
+            <img src="logo.png" alt="転売イヤーのロゴ">
+            </a>
+        </div>
+        <!-- メニュー -->
+        <div class="menu-dots" onclick="toggleMenu()">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+        </div>
+        <div id="dropdown" class="dropdown-menu">
+            <a href="add_product.html">商品を出品</a>
+            <a href="chat_list.html">チャット</a>
+            <a href="login.html" onclick="localStorage.removeItem('userid')">ログアウト</a>
+        </div>
+    </header>
     <h2 class="cr-title">チャットルーム一覧</h2>
     <div class="cr-room-list" id="chatRooms"></div>
     <div class="cr-btn-area">
@@ -40,6 +60,22 @@ if (!userid) {
     location.href = "login.html";
 }
 
+function toggleMenu(){
+    const menu = document.getElementById('dropdown');
+    const btn = document.querySelector('.menu-dots');
+    // メニューを出す座標を取得
+    const rect = btn.getBoundingClientRect();
+
+    if (!menu.classList.contains('show')) {
+        menu.style.left = rect.right - 150 + "px";
+        menu.style.top  = rect.bottom + 6 + "px";
+        menu.classList.add('show');
+        document.addEventListener('mousedown', closeMenuWhenOutside);
+    } else {
+        menu.classList.remove('show');
+        document.removeEventListener('mousedown', closeMenuWhenOutside);
+    }
+}
 
 async function loadChatRooms() {
     const res = await fetch(`https://jqiufvqui0.execute-api.ap-southeast-2.amazonaws.com/hackChatlist?userid=${userid}`);
